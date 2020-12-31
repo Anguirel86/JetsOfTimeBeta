@@ -9,6 +9,7 @@ import shopwriter as shops
 import characterwritertesting as char_slots
 import logicwriter as keyitems
 import random as rand
+import logicwriter_fullrando as fullrando
 import ipswriter as bigpatches
 import patcher as patches
 import enemywriter as enemystuff
@@ -78,6 +79,7 @@ unlocked_magic = ""
 characters = ['Crono', 'Marle', 'Lucca', 'Frog', 'Robo', 'Ayla', 'Magus']
 char_locs = []
 quiet_mode = ""
+full_rando = ""
    
 #
 # Handle the command line interface for the randomizer.
@@ -98,6 +100,7 @@ def command_line():
      global seed
      global tech_list_balanced
      global unlocked_magic
+     global full_rando
      flags = ""
      sourcefile = input("Please enter ROM name or drag it onto the screen.")
      sourcefile = sourcefile.strip("\"")
@@ -171,6 +174,10 @@ def command_line():
      quiet_mode = quiet_mode.upper()
      if quiet_mode == "Y":
          flags = flags + "q"
+     full_rando = input("Do you want to enable full randomization? (f)? Y/N")
+     full_rando = full_rando.upper()
+     if full_rando == "Y":
+         flags = flags + "f"
 
 #
 # Given a tk IntVar, convert it to a Y/N value for use by the randomizer.
@@ -204,6 +211,7 @@ def handle_gui(datastore):
   global char_locs
   global unlocked_magic
   global quiet_mode
+  global full_rando
 
   # Hopefully get the chosen character locations
   x = 0
@@ -241,6 +249,7 @@ def handle_gui(datastore):
   locked_chars = get_flag_value(datastore.flags['c'])
   unlocked_magic = get_flag_value(datastore.flags['m'])
   quiet_mode = get_flag_value(datastore.flags['q'])
+  full_rando = get_flag_value(datastore.flags['f'])
   
   # source ROM
   sourcefile = datastore.inputFile.get()
@@ -278,6 +287,7 @@ def generate_rom():
      global char_locs
      global unlocked_magic
      global quiet_mode
+     global full_rando
      outfile = sourcefile.split(".")
      outfile = str(outfile[0])
      if flags == "":
@@ -333,10 +343,14 @@ def generate_rom():
      if lost_worlds == "Y":
          keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
      else:
-         keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
+         if full_rando == "Y":
+           fullrando.writeKeyItems(
+               outfile, char_locs, (locked_chars == "Y"), (quick_pendant == "Y"))
+         else:
+           keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
      if difficulty == "hard":
          bigpatches.write_patch("patches/hard.ips",outfile)
-     if boss_scaler == "Y":
+     if boss_scaler == "Y" and full_rando != "Y":
          print("Rescaling bosses based on key items..")
          boss_scale.scale_bosses(char_locs,keyitemlist,locked_chars,outfile)
      if tech_list == "Fully Random":

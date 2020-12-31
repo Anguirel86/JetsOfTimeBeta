@@ -26,6 +26,7 @@ class DataStore:
 
 datastore = DataStore()
 progressBar = None
+optionsFrame = None
 
 #
 # Generate thread target function, calls out to the randomizer to
@@ -73,7 +74,12 @@ def flagClear():
     datastore.flags['p'].set(0)
     datastore.flags['c'].set(0)
     datastore.flags['m'].set(0)
+    datastore.flags['f'].set(0)
     datastore.techRando.set("Normal")
+    # Make sure all checkboxes are enabled
+    for widget in optionsFrame.winfo_children():
+      if type(widget) == tk.Checkbutton:
+        widget.configure(state="normal")
 
 def presetRace():
     flagClear()
@@ -124,6 +130,8 @@ def getGameFlagsFrame(window):
   frame = tk.Frame(window, borderwidth = 1)
   row = 0
   pendantCheckbox = None
+  bossScalingCheckbox = None
+  lostWorldsCheckbox = None
 
   # Janky addition for presets because I suck at python - Future
   #Presets Header
@@ -183,13 +191,15 @@ def getGameFlagsFrame(window):
       
   var = tk.IntVar()
   datastore.flags['l'] = var
-  tk.Checkbutton(frame, text="Lost Worlds(l)", variable = var, command=togglePendantState).grid(row=row, sticky=tk.W, columnspan=3)
+  lostWorldsCheckbox = tk.Checkbutton(frame, text="Lost Worlds(l)", variable = var, command=togglePendantState)
+  lostWorldsCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
   
   # Boss scaling
   var = tk.IntVar()
   datastore.flags['b'] = var
-  tk.Checkbutton(frame, text="Boss scaling(b)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  bossScalingCheckbox = tk.Checkbutton(frame, text="Boss scaling(b)", variable = var)
+  bossScalingCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
   
   # Zeal 2 as last boss
@@ -223,6 +233,24 @@ def getGameFlagsFrame(window):
   tk.Checkbutton(frame, text="Quiet Mode - No Music (q)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
 
+  # Full randomization
+  def disableFullRandoIncompatibleFlags():
+    if datastore.flags['f'].get() == 1:
+      # Boss scaling doesn't work with full rando.
+      datastore.flags['b'].set(0)
+      datastore.flags['l'].set(0)
+      bossScalingCheckbox.config(state=tk.DISABLED)
+      lostWorldsCheckbox.config(state=tk.DISABLED)
+      pendantCheckbox.config(state=tk.NORMAL)
+    else:
+      bossScalingCheckbox.config(state=tk.NORMAL)
+      lostWorldsCheckbox.config(state=tk.NORMAL)
+      
+  var = tk.IntVar()
+  datastore.flags['f'] = var
+  tk.Checkbutton(frame, text="Full Randomization(f)", variable = var, command=disableFullRandoIncompatibleFlags).grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
+  
   # Dropdown for the tech rando
   techRandoValues = ["Normal", "Balanced Random", "Fully Random"]
   label = tk.Label(frame, text="Tech Randomization:")
@@ -261,11 +289,13 @@ def getGameFlagsFrame(window):
 # Main entry function for the GUI. Set up and launch the display.
 #  
 def guiMain():
+  global optionsFrame
   mainWindow = tk.Tk()
   mainWindow.wm_title("Jets of Time")
 
   tabs = ttk.Notebook(mainWindow)
-  tabs.add(getGameFlagsFrame(tabs),text="Flags")
+  optionsFrame = getGameFlagsFrame(tabs)
+  tabs.add(optionsFrame,text="Flags")
   tabs.add(getCharacterFrame(tabs),text="Characters")
   tabs.pack(expand=1,fill="both")
   #optionsFrame = getGameFlagsFrame(mainWindow)
