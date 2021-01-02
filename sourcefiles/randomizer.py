@@ -8,7 +8,7 @@ import specialwriter as hardcoded_items
 import shopwriter as shops
 import characterwriter as char_slots
 import logicwriter as keyitems
-import logicwriter_fullrando as fullrando
+import logicwriter_chronosanity as chronosanity_logic
 import random as rand
 import ipswriter as bigpatches
 import patcher as patches
@@ -77,7 +77,7 @@ seed = ""
 tech_list = ""
 unlocked_magic = ""
 quiet_mode = ""
-full_rando = ""
+chronosanity = ""
    
 #
 # Handle the command line interface for the randomizer.
@@ -99,7 +99,7 @@ def command_line():
      global tech_list_balanced
      global unlocked_magic
      global quiet_mode
-     global full_rando
+     global chronosanity
      flags = ""
      sourcefile = input("Please enter ROM name or drag it onto the screen.")
      sourcefile = sourcefile.strip("\"")
@@ -173,10 +173,10 @@ def command_line():
      quiet_mode = quiet_mode.upper()
      if quiet_mode == "Y":
          flags = flags + "q"
-     full_rando = input("Do you want to enable full randomization? (f)? Y/N")
-     full_rando = full_rando.upper()
-     if full_rando == "Y":
-         flags = flags + "f"
+     chronosanity = input("Do you want to enable Chronosanity (key items can appear in chests)? (cr)? Y/N")
+     chronosanity = chronosanity.upper()
+     if chronosanity == "Y":
+         flags = flags + "cr"
     
 
 #
@@ -209,7 +209,7 @@ def handle_gui(datastore):
   global seed
   global unlocked_magic
   global quiet_mode
-  global full_rando
+  global chronosanity
   
   # Get the user's chosen difficulty
   difficulty = datastore.difficulty.get()
@@ -238,7 +238,7 @@ def handle_gui(datastore):
   locked_chars = get_flag_value(datastore.flags['c'])
   unlocked_magic = get_flag_value(datastore.flags['m'])
   quiet_mode = get_flag_value(datastore.flags['q'])
-  full_rando = get_flag_value(datastore.flags['f'])
+  chronosanity = get_flag_value(datastore.flags['cr'])
   
   # source ROM
   sourcefile = datastore.inputFile.get()
@@ -274,7 +274,7 @@ def generate_rom():
      global seed
      global unlocked_magic
      global quiet_mode
-     global full_rando
+     global chronosanity
      outfile = sourcefile.split(".")
      outfile = str(outfile[0])
      if flags == "":
@@ -330,14 +330,14 @@ def generate_rom():
      if lost_worlds == "Y":
          keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
      else:
-         if full_rando == "Y":
-           fullrando.writeKeyItems(
+         if chronosanity == "Y":
+           chronosanity_logic.writeKeyItems(
                outfile, char_locs, (locked_chars == "Y"), (quick_pendant == "Y"))
          else:
            keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
      if difficulty == "hard":
          bigpatches.write_patch("patches/hard.ips",outfile)
-     if boss_scaler == "Y" and full_rando != "Y":
+     if boss_scaler == "Y" and chronosanity != "Y":
          print("Rescaling bosses based on key items..")
          boss_scale.scale_bosses(char_locs,keyitemlist,locked_chars,outfile)
      if tech_list == "Fully Random":

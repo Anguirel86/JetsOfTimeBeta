@@ -9,7 +9,7 @@ import shopwriter as shops
 import characterwritertesting as char_slots
 import logicwriter as keyitems
 import random as rand
-import logicwriter_fullrando as fullrando
+import logicwriter_chronosanity as chronosanity_logic
 import ipswriter as bigpatches
 import patcher as patches
 import enemywriter as enemystuff
@@ -79,7 +79,7 @@ unlocked_magic = ""
 characters = ['Crono', 'Marle', 'Lucca', 'Frog', 'Robo', 'Ayla', 'Magus']
 char_locs = []
 quiet_mode = ""
-full_rando = ""
+chronosanity = ""
    
 #
 # Handle the command line interface for the randomizer.
@@ -174,10 +174,10 @@ def command_line():
      quiet_mode = quiet_mode.upper()
      if quiet_mode == "Y":
          flags = flags + "q"
-     full_rando = input("Do you want to enable full randomization? (f)? Y/N")
-     full_rando = full_rando.upper()
-     if full_rando == "Y":
-         flags = flags + "f"
+     chronosanity = input("Do you want to enable Chronosanity (key items can appear in chests)? (cr)? Y/N")
+     chronosanity = chronosanity.upper()
+     if chronosanity == "Y":
+         flags = flags + "cr"
 
 #
 # Given a tk IntVar, convert it to a Y/N value for use by the randomizer.
@@ -211,7 +211,7 @@ def handle_gui(datastore):
   global char_locs
   global unlocked_magic
   global quiet_mode
-  global full_rando
+  global chronosanity
 
   # Hopefully get the chosen character locations
   x = 0
@@ -249,7 +249,7 @@ def handle_gui(datastore):
   locked_chars = get_flag_value(datastore.flags['c'])
   unlocked_magic = get_flag_value(datastore.flags['m'])
   quiet_mode = get_flag_value(datastore.flags['q'])
-  full_rando = get_flag_value(datastore.flags['f'])
+  chronosanity = get_flag_value(datastore.flags['cr'])
   
   # source ROM
   sourcefile = datastore.inputFile.get()
@@ -287,7 +287,7 @@ def generate_rom():
      global char_locs
      global unlocked_magic
      global quiet_mode
-     global full_rando
+     global chronosanity
      outfile = sourcefile.split(".")
      outfile = str(outfile[0])
      if flags == "":
@@ -343,8 +343,8 @@ def generate_rom():
      if lost_worlds == "Y":
          keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
      else:
-         if full_rando == "Y":
-           fullrando.writeKeyItems(
+         if chronosanity == "Y":
+           chronosanity_logic.writeKeyItems(
                outfile, char_locs, (locked_chars == "Y"), (quick_pendant == "Y"))
          else:
            keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)

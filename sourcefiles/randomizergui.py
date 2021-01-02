@@ -71,7 +71,7 @@ def flagClear():
     datastore.flags['p'].set(0)
     datastore.flags['c'].set(0)
     datastore.flags['m'].set(0)
-    datastore.flags['f'].set(0)
+    datastore.flags['cr'].set(0)
     datastore.techRando.set("Normal")
     # Make sure all checkboxes are enabled
     for widget in optionsFrame.winfo_children():
@@ -177,6 +177,7 @@ def getGameFlagsFrame(window):
   
   # Lost Worlds
 
+  #
   # Callback function to disable the early pendant charge option when 
   # the user selects the Lost Worlds mode. Early Pendant is not avaiable
   # in Lost Worlds mode.
@@ -232,9 +233,9 @@ def getGameFlagsFrame(window):
   tk.Checkbutton(frame, text="Quiet Mode - No Music (q)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
   
-  # Full randomization
-  def disableFullRandoIncompatibleFlags():
-    if datastore.flags['f'].get() == 1:
+  # Chronosanity
+  def disableChronosanityIncompatibleFlags():
+    if datastore.flags['cr'].get() == 1:
       # Boss scaling doesn't work with full rando.
       datastore.flags['b'].set(0)
       datastore.flags['l'].set(0)
@@ -246,8 +247,8 @@ def getGameFlagsFrame(window):
       lostWorldsCheckbox.config(state=tk.NORMAL)
       
   var = tk.IntVar()
-  datastore.flags['f'] = var
-  tk.Checkbutton(frame, text="Full Randomization(f)", variable = var, command=disableFullRandoIncompatibleFlags).grid(row=row, sticky=tk.W, columnspan=3)
+  datastore.flags['cr'] = var
+  tk.Checkbutton(frame, text="Chronosanity(cr)", variable = var, command=disableChronosanityIncompatibleFlags).grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
 
   # Dropdown for the tech rando

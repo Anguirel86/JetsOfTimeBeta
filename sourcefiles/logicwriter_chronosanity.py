@@ -7,6 +7,14 @@ import struct as st
 import characterwriter as chars
 import treasurewriter as treasure
 
+#
+# This script file implements the Chronosanity logic.
+# It uses a weighted random distribution to place key items
+# based on logical access rules per location.  Any baeline key
+# item location that does not get a key item assigned to it will
+# be assigned a random treasure.
+#
+
 # Script variables
 locationGroups = []
 
@@ -46,6 +54,16 @@ class Characters(enum.Enum):
 # end Character enum class
 
 #
+# Enum representing various loot tiers that are used
+# for assigning treasure to unused key item checks.
+#
+class LootTiers(enum.Enum):
+  Mid = 0
+  MidHigh = 1
+  High = 2
+# end LootTiers enum class
+
+#
 # The Game class is used to keep track of game state
 # as the randomizer places key items.  It:
 #   - Tracks key items obtained
@@ -58,6 +76,14 @@ class Game:
     self.keyItems = set()
     self.earlyPendant = False
     self.lockedChars = False
+  
+  #
+  # Get the number of key items that have been acquired by the player.
+  #
+  # return: Number of obtained key items
+  #
+  def getKeyItemCount(self):
+    return len(self.keyItems)
   
   #
   # Set whether or not this seed is using the early pendant flag.
@@ -296,8 +322,17 @@ class EventLocation(Location):
 # sealed chests.
 #
 class BaselineLocation(EventLocation):
-  def __init__(self, name, pointer, pointer2):
+  def __init__(self, name, pointer, pointer2, lootTier):
     EventLocation.__init__(self, name, pointer, pointer2)
+    self.lootTier = lootTier
+    
+  #
+  # Get the loot tier associated with this check.
+  #
+  # return: The loot tier associated with this check
+  #
+  def getLootTier(self):
+    return self.lootTier
 
 # End BaselineLocation class
 
@@ -395,102 +430,124 @@ def initLocationGroups():
   global locationGroups
   locationGroups = []
 
-  # Dark Ages (Key Item only)
+  # Dark Ages 
+  # Mount Woe does not go away in the randomizer, so it
+  # is being considered for key item drops.
   darkagesLocations = \
-      LocationGroup("Darkages", 1, lambda game:game.canAccessDarkAges())
+      LocationGroup("Darkages", 10, lambda game:game.canAccessDarkAges())
   (darkagesLocations
-      .addLocation(BaselineLocation("Mount Woe", 0x381010, 0x381013))
+      .addLocation(Location("Mt Woe 1st Screen",0x35F770))
+      .addLocation(Location("Mt Woe 2nd Screen 1",0x35F748))
+      .addLocation(Location("Mt Woe 2nd Screen 2",0x35F74C))
+      .addLocation(Location("Mt Woe 2nd Screen 3",0x35F750))
+      .addLocation(Location("Mt Woe 2nd Screen 4",0x35F754))
+      .addLocation(Location("Mt Woe 2nd Screen 5",0x35F758))
+      .addLocation(Location("Mt Woe 3rd Screen 1",0x35F75C))
+      .addLocation(Location("Mt Woe 3rd Screen 2",0x35F760))
+      .addLocation(Location("Mt Woe 3rd Screen 3",0x35F764))
+      .addLocation(Location("Mt Woe 3rd Screen 4",0x35F768))
+      .addLocation(Location("Mt Woe 3rd Screen 5",0x35F76C))
+      .addLocation(Location("Mt Woe Final 1",0x35F774))
+      .addLocation(Location("Mt Woe Final 2",0x35F778))
+      .addLocation(BaselineLocation("Mount Woe", 0x381010, 0x381013, LootTiers.High))
   )
 
   # Fiona Shrine (Key Item only)
   fionaShrineLocations = \
-      LocationGroup("Fionashrine", 1, lambda game:game.canAccessFionasShrine())
+      LocationGroup("Fionashrine", 3, lambda game:game.canAccessFionasShrine())
   (fionaShrineLocations
-      .addLocation(BaselineLocation("Fiona's Shrine", 0x6EF5E, 0x6EF61))
+      .addLocation(BaselineLocation("Fiona's Shrine", 0x6EF5E, 0x6EF61, LootTiers.MidHigh))
   )
 
   # Future
   futureOpenLocations = \
-      LocationGroup("FutureOpen", 7, lambda game:game.canAccessFuture())
+      LocationGroup("FutureOpen", 12, lambda game:game.canAccessFuture())
   (futureOpenLocations
       # Chests
-      .addLocation(Location("Prison Tower",0x35F7DC)) # 1000AD, opened after trial    
-      .addLocation(Location("Arris Dome",0x35F5C8))          
-      .addLocation(Location("Sewers 1",0x35F614))     
-      .addLocation(Location("Sewers 2",0x35F618))     
-      .addLocation(Location("Sewers 3",0x35F61C))     
-      .addLocation(Location("Arris Dome Food Store",0x35F744))  
+      .addLocation(Location("Arris Dome",0x35F5C8))
+      .addLocation(Location("Arris Dome Food Store",0x35F744))
       # KeyItems    
-      .addLocation(BaselineLocation("Arris Dome Doan", 0x392F4C, 0x392F4E))     
-      .addLocation(BaselineLocation("Sun Palace", 0x1B8D95, 0x1B8D97))      
+      .addLocation(BaselineLocation("Arris Dome Doan", 0x392F4C, 0x392F4E, LootTiers.MidHigh))
+      .addLocation(BaselineLocation("Sun Palace", 0x1B8D95, 0x1B8D97, LootTiers.MidHigh))
+  )
+  
+  futureSewersLocations = \
+      LocationGroup("FutureSewers", 3, lambda game:game.canAccessFuture())
+  (futureSewersLocations
+      .addLocation(Location("Sewers 1",0x35F614))     
+      .addLocation(Location("Sewers 2",0x35F618))
+      .addLocation(Location("Sewers 3",0x35F61C))
   )
   
   futureLabLocations = \
-      LocationGroup("FutureLabs", 3, lambda game:game.canAccessFuture())
+      LocationGroup("FutureLabs", 6, lambda game:game.canAccessFuture())
   (futureLabLocations
-      .addLocation(Location("Lab 16 1",0x35F5B8))     
-      .addLocation(Location("Lab 16 2",0x35F5BC))     
-      .addLocation(Location("Lab 16 3",0x35F5C0))     
+      .addLocation(Location("Lab 16 1",0x35F5B8))
+      .addLocation(Location("Lab 16 2",0x35F5BC))
+      .addLocation(Location("Lab 16 3",0x35F5C0))
       .addLocation(Location("Lab 16 4",0x35F5C4))
-      .addLocation(Location("Lab 32 1",0x35F5E0))     
-      .addLocation(Location("Lab 32 2",0x35F5E4))      
+      .addLocation(Location("Lab 32 1",0x35F5E0))
+      # 1000AD, opened after trial - putting it here to dilute the lab pool a bit
+      .addLocation(Location("Prison Tower",0x35F7DC)) 
+      # Race log chest is not included.      
+      #.addLocation(Location("Lab 32 2",0x35F5E4))
   )
   
   genoDomeLocations = \
-      LocationGroup("GenoDome", 5, lambda game:game.canAccessFuture())
+      LocationGroup("GenoDome", 11, lambda game:game.canAccessFuture())
   (genoDomeLocations
-      .addLocation(Location("Geno Dome 1st Floor 1",0x35F630))      
-      .addLocation(Location("Geno Dome 1st Floor 2",0x35F634))      
-      .addLocation(Location("Geno Dome 1st Floor 3",0x35F638))      
-      .addLocation(Location("Geno Dome 1st Floor 4",0x35F63C))      
-      .addLocation(Location("Geno Dome Room 1",0x35F640))     
-      .addLocation(Location("Geno Dome Room 2",0x35F644))     
-      .addLocation(Location("Proto 4 Chamber 1",0x35F648))      
-      .addLocation(Location("Proto 4 Chamber 2",0x35F64C))      
-      .addLocation(Location("Geno Dome 2nd Floor 1",0x35F668))      
-      .addLocation(Location("Geno Dome 2nd Floor 2",0x35F66C))      
-      .addLocation(Location("Geno Dome 2nd Floor 3",0x35F670))      
+      .addLocation(Location("Geno Dome 1st Floor 1",0x35F630))
+      .addLocation(Location("Geno Dome 1st Floor 2",0x35F634))
+      .addLocation(Location("Geno Dome 1st Floor 3",0x35F638))
+      .addLocation(Location("Geno Dome 1st Floor 4",0x35F63C))
+      .addLocation(Location("Geno Dome Room 1",0x35F640))
+      .addLocation(Location("Geno Dome Room 2",0x35F644))
+      .addLocation(Location("Proto 4 Chamber 1",0x35F648))
+      .addLocation(Location("Proto 4 Chamber 2",0x35F64C))
+      .addLocation(Location("Geno Dome 2nd Floor 1",0x35F668))
+      .addLocation(Location("Geno Dome 2nd Floor 2",0x35F66C))
+      .addLocation(Location("Geno Dome 2nd Floor 3",0x35F670))
       .addLocation(Location("Geno Dome 2nd Floor 4",0x35F674))
-      .addLocation(BaselineLocation("Geno Dome Mother Brain", 0x1B1844, 0x1B1846))
+      .addLocation(BaselineLocation("Geno Dome Mother Brain", 0x1B1844, 0x1B1846, LootTiers.MidHigh))
   )
   
   factoryLocations = \
-      LocationGroup("Factory", 5, lambda game:game.canAccessFuture())
+      LocationGroup("Factory", 10, lambda game:game.canAccessFuture())
   (factoryLocations
-      .addLocation(Location("Factory Ruins Left 1",0x35F5E8))     
-      .addLocation(Location("Factory Ruins Left 2",0x35F5EC))     
-      .addLocation(Location("Factory Ruins Left 3",0x35F5F0))     
-      .addLocation(Location("Factory Ruins Left 4",0x35F610))     
-      .addLocation(Location("Factory Ruins Left 5",0x35F650))     
-      .addLocation(Location("Factory Ruins Left 6",0x35F654))     
-      .addLocation(Location("Factory Ruins Right 1",0x35F5F4))      
-      .addLocation(Location("Factory Ruins Right 2",0x35F5F8))      
-      .addLocation(Location("Factory Ruins Right 3",0x35F5FC))      
-      .addLocation(Location("Factory Ruins Right 4",0x35F600))      
-      .addLocation(Location("Factory Ruins Right 5",0x35F604))      
-      .addLocation(Location("Factory Ruins Right 6",0x35F608))      
-      .addLocation(Location("Factory Ruins Right 7",0x35F60C))      
-      .addLocation(Location("Factory Ruins Right 8",0x35F7A0)) 
+      .addLocation(Location("Factory Ruins Left - Auxillary Console",0x35F5E8))
+      .addLocation(Location("Factory Ruins Left - Security Center (Right)",0x35F5EC))
+      .addLocation(Location("Factory Ruins Left - Security Center (Left)",0x35F5F0))
+      .addLocation(Location("Factory Ruins Left - Power Core",0x35F610))
+      .addLocation(Location("Factory Ruins Right - Data Core 1",0x35F650))
+      .addLocation(Location("Factory Ruins Left - Data Core 2",0x35F654))
+      .addLocation(Location("Factory Ruins Right - Factory Floor (Top)",0x35F5F4))
+      .addLocation(Location("Factory Ruins Right - Factory Floor (Left)",0x35F5F8))
+      .addLocation(Location("Factory Ruins Right - Factory Floor (Bottom)",0x35F5FC))
+      .addLocation(Location("Factory Ruins Right - Factory Floor (Secret)",0x35F600))
+      .addLocation(Location("Factory Ruins Right - Crane Control Room (lower)",0x35F604))
+      .addLocation(Location("Factory Ruins Right - Crane Control Room (upper)",0x35F608))
+      .addLocation(Location("Factory Ruins Right - Information Archive",0x35F60C))
+      #.addLocation(Location("Factory Ruins Right - Robot Storage",0x35F7A0)) # Inaccessible chest
   )
 
   # GiantsClawLocations
   giantsClawLocations = \
-      LocationGroup("Giantsclaw", 5, lambda game:game.canAccessGiantsClaw())
+      LocationGroup("Giantsclaw", 11, lambda game:game.canAccessGiantsClaw())
   (giantsClawLocations
-      .addLocation(Location("Giant's Claw Kino's Cell",0x35F468))     
-      .addLocation(Location("Giant's Claw Traps",0x35F46C))     
-      .addLocation(Location("Giant's Claw Caves 1",0x35F56C))     
-      .addLocation(Location("Giant's Claw Caves 2",0x35F570))     
-      .addLocation(Location("Giant's Claw Caves 3",0x35F574))     
-      .addLocation(Location("Giant's Claw Caves 4",0x35F578))     
-      .addLocation(Location("Giant's Claw Caves 5",0x35F57C))     
-      .addLocation(Location("Giant's Claw Caves 6",0x35F580))     
-      .addLocation(BaselineLocation("Giant's Claw", 0x1B8AEC, 0x1B8AEF)) #key item
+      .addLocation(Location("Giant's Claw Kino's Cell",0x35F468))
+      .addLocation(Location("Giant's Claw Traps",0x35F46C))
+      .addLocation(Location("Giant's Claw Caves 1",0x35F56C))
+      .addLocation(Location("Giant's Claw Caves 2",0x35F570))
+      .addLocation(Location("Giant's Claw Caves 3",0x35F574))
+      .addLocation(Location("Giant's Claw Caves 4",0x35F578))
+      .addLocation(Location("Giant's Claw Caves 5",0x35F57C))
+      .addLocation(Location("Giant's Claw Caves 6",0x35F580))
+      .addLocation(BaselineLocation("Giant's Claw", 0x1B8AEC, 0x1B8AEF, LootTiers.Mid)) #key item
   )
 
   # Northern Ruins
   northernRuinsLocations = \
-      LocationGroup("NorthernRuins", 3, \
+      LocationGroup("NorthernRuins", 9, \
           lambda game:(game.canAccessRuins() and game.canAccessSealedChests()))
   (northernRuinsLocations
       # Sealed chests in Northern Ruins
@@ -501,7 +558,7 @@ def initLocationGroups():
 
   # Guardia Treasury
   guardiaTreasuryLocations = \
-      LocationGroup("GuardiaTreasury", 5, lambda game:game.canAccessKingsTrial())
+      LocationGroup("GuardiaTreasury", 12, lambda game:game.canAccessKingsTrial())
   (guardiaTreasuryLocations
       .addLocation(Location("Guardia Basement 1", 0x35F41C))
       .addLocation(Location("Guardia Basement 2", 0x35F420))
@@ -509,7 +566,7 @@ def initLocationGroups():
       .addLocation(Location("Guardia Treasury 1", 0x35F7A4))
       .addLocation(Location("Guardia Treasury 2", 0x35F7A8))
       .addLocation(Location("Guardia Treasury 3", 0x35F7AC))
-      .addLocation(BaselineLocation("King's Trial", 0x38045D, 0x38045F))
+      .addLocation(BaselineLocation("King's Trial", 0x38045D, 0x38045F, LootTiers.High))
   )
   
   # Ozzie's Fort locations
@@ -518,7 +575,7 @@ def initLocationGroups():
   # The final two chests are locked behind the trio battle.  Only consider these if
   # the player has access to the Dark Ages.
   earlyOzziesFortLocations = \
-      LocationGroup("Ozzie's Fort Front", 1, \
+      LocationGroup("Ozzie's Fort Front", 2, \
           lambda game: (game.canAccessFuture() or game.canAccessPrehistory()))
   (earlyOzziesFortLocations
       .addLocation(Location("Ozzie's Fort Guillotines 1",0x35F554))
@@ -528,7 +585,7 @@ def initLocationGroups():
   )
   
   lateOzziesFortLocations = \
-      LocationGroup("Ozzie's Fort Back", 1, lambda game: game.canAccessDarkAges())
+      LocationGroup("Ozzie's Fort Back", 2, lambda game: game.canAccessDarkAges())
   (lateOzziesFortLocations
       .addLocation(Location("Ozzie's Fort Final 1",0x35F564))
       .addLocation(Location("Ozzie's Fort Final 2",0x35F568))
@@ -537,29 +594,29 @@ def initLocationGroups():
   # Open locations always available with no access requirements
   # Open locations are split into multiple groups so that weighting
   # can be applied separately to individual areas.
-  openLocations = LocationGroup("Open", 9, lambda game: True)
+  openLocations = LocationGroup("Open", 5, lambda game: True)
   (openLocations
-      .addLocation(Location("Truce Mayor's House F1",0x35F40C))     
-      .addLocation(Location("Truce Mayor's House F2",0x35F410))        
-      .addLocation(Location("Forest Ruins",0x35F42C))     
+      .addLocation(Location("Truce Mayor's House F1",0x35F40C))
+      .addLocation(Location("Truce Mayor's House F2",0x35F410))
+      .addLocation(Location("Forest Ruins",0x35F42C))
       .addLocation(Location("Heckran Cave Sidetrack",0x35F430))
       .addLocation(Location("Heckran Cave Entrance",0x35F434))
       .addLocation(Location("Heckran Cave 1",0x35F438))
       .addLocation(Location("Heckran Cave 2",0x35F43C))
-      .addLocation(Location("Porre Mayor's House F2",0x35F440))     
-      .addLocation(Location("Truce Canyon 1",0x35F470))     
-      .addLocation(Location("Truce Canyon 2",0x35F474))     
-      .addLocation(Location("Cursed Woods 1",0x35F4A4))
-      .addLocation(Location("Cursed Woods 2",0x35F4A8))
-      .addLocation(Location("Frog's Burrow Right Chest",0x35F4AC))
+      .addLocation(Location("Porre Mayor's House F2",0x35F440))
+      .addLocation(Location("Truce Canyon 1",0x35F470))
+      .addLocation(Location("Truce Canyon 2",0x35F474))
       .addLocation(Location("Fiona's House 1",0x35F4FC))
       .addLocation(Location("Fiona's House 2",0x35F500))
       .addLocation(Location("Yakra's Room",0x35F584))
+      .addLocation(Location("Cursed Woods 1",0x35F4A4))
+      .addLocation(Location("Cursed Woods 2",0x35F4A8))
+      .addLocation(Location("Frog's Burrow Right Chest",0x35F4AC))
       #Key Items
-      .addLocation(BaselineLocation("Zenan Bridge", 0x393C82, 0x393C84))
-      .addLocation(BaselineLocation("Taban", 0x35F8AE, 0x35F8B0))
-      .addLocation(BaselineLocation("Snail Stop", 0x380C42, 0x380C5B))
-      .addLocation(BaselineLocation("Lazy Carpenter", 0x3966B, 0x3966D))
+      .addLocation(BaselineLocation("Zenan Bridge", 0x393C82, 0x393C84, LootTiers.Mid))
+      .addLocation(BaselineLocation("Taban", 0x35F888, 0x35F88A, LootTiers.Mid))
+      .addLocation(BaselineLocation("Snail Stop", 0x380C42, 0x380C5B, LootTiers.Mid))
+      .addLocation(BaselineLocation("Lazy Carpenter", 0x3966B, 0x3966D, LootTiers.Mid))
   )
   
   guardiaCastleLocations = \
@@ -578,7 +635,7 @@ def initLocationGroups():
   )
   
   cathedralLocations = \
-      LocationGroup("CathedralLocations", 1, lambda game: True)
+      LocationGroup("CathedralLocations", 2, lambda game: True)
   (cathedralLocations
       .addLocation(Location("Manoria Cathedral 1",0x35F488))
       .addLocation(Location("Manoria Cathedral 2",0x35F48C))
@@ -597,7 +654,7 @@ def initLocationGroups():
   )
   
   denadoroLocations = \
-      LocationGroup("DenadoroLocations", 1, lambda game:True)
+      LocationGroup("DenadoroLocations", 3, lambda game:True)
   (denadoroLocations
       .addLocation(Location("Denadoro Mts Screen 2 1",0x35F4B0))
       .addLocation(Location("Denadoro Mts Screen 2 2",0x35F4B4))
@@ -618,12 +675,12 @@ def initLocationGroups():
       .addLocation(Location("Denadoro Mts Screen 3 4",0x35F4F0))      
       .addLocation(Location("Denadoro Mts Ambush",0x35F4F4))      
       .addLocation(Location("Denadoro Mts Save Point",0x35F4F8))
-      .addLocation(BaselineLocation("Denadoro Mountain", 0x37742F, 0x377432))
+      .addLocation(BaselineLocation("Denadoro Mountain", 0x37742F, 0x377432, LootTiers.Mid))
   )
       
-  # Sealed locations in Future
+  # Sealed locations
   sealedLocations = \
-      LocationGroup("SealedLocations", 5, lambda game:game.canAccessSealedChests())
+      LocationGroup("SealedLocations", 17, lambda game:game.canAccessSealedChests())
   (sealedLocations
       # Sealed Doors
       .addLocation(Location("Bangor Dome Seal 1", 0x35F5A4))
@@ -639,8 +696,7 @@ def initLocationGroups():
       .addLocation(EventLocation("Truce Inn 600AD Sealed",0x19FE7C,0x19FE83))     
       .addLocation(EventLocation("Porre Elder's House 1 Sealed",0x1B90EA,0x1B90F2))     
       .addLocation(EventLocation("Porre Elder's House 2Sealed",0x1B9123,0x1B9126))     
-      .addLocation(EventLocation("Guardia Castle 600AD Sealed",0x3AED24,0x3AED26))      
-      .addLocation(EventLocation("Magic Cave",0x1B31C7,0x1B31CA))      
+      .addLocation(EventLocation("Guardia Castle 600AD Sealed",0x3AED24,0x3AED26))  
       .addLocation(EventLocation("Guardia Forest 600AD Sealed",0x39633B,0x39633D))      
       .addLocation(EventLocation("Truce Inn 1000AD Sealed",0xC3328,0xC332C))           
       .addLocation(EventLocation("Porre Mayor's House Sealed 1",0x1BACD6,0x1BACD8))     
@@ -655,10 +711,20 @@ def initLocationGroups():
       #.addLocation(EventLocation("Forest Ruins 2",0x1BAB62,0x1BAB64)) 
   )
   
+  # Sealed chest in the magic cave.
+  # Requires both powered up pendant and Magus' Castle access
+  magicCaveLocations = \
+      LocationGroup("Magic Cave", 2, \
+          lambda game: game.canAccessSealedChests() and game.canAccessMagusCastle())
+  (magicCaveLocations
+      .addLocation(EventLocation("Magic Cave",0x1B31C7,0x1B31CA))
+  )
+  
   # Prehistory
   prehistoryForestMazeLocations = \
-      LocationGroup("PrehistoryForestMaze", 4, lambda game:game.canAccessPrehistory())
+      LocationGroup("PrehistoryForestMaze", 6, lambda game:game.canAccessPrehistory())
   (prehistoryForestMazeLocations
+      .addLocation(Location("Mystic Mtn Stream",0x35F678))
       .addLocation(Location("Forest Maze 1",0x35F67C))
       .addLocation(Location("Forest Maze 2",0x35F680))
       .addLocation(Location("Forest Maze 3",0x35F684))
@@ -670,39 +736,49 @@ def initLocationGroups():
       .addLocation(Location("Forest Maze 9",0x35F69C))
   )
   
-  prehistoryOtherLocations = \
-      LocationGroup("PrehistoryOther", 6, lambda game:game.canAccessPrehistory())
-  (prehistoryOtherLocations
-      .addLocation(Location("Mystic Mtn Stream",0x35F678))
+  prehistoryReptiteLocations = \
+      LocationGroup("PrehistoryReptite", 9, lambda game:game.canAccessPrehistory())
+  (prehistoryReptiteLocations
       .addLocation(Location("Reptite Lair Reptites 1",0x35F6B8))
       .addLocation(Location("Reptite Lair Reptites 2",0x35F6BC))
+      #.addLocation(Location("Tyrano Lair Kino's Cell",0x35F6DC)) # This chest is inaccessible after Tyrano Lair
+      .addLocation(BaselineLocation("Reptite Lair", 0x18FC2C, 0x18FC2F, LootTiers.MidHigh)) #Reptite Lair Key Item
+  )
+  
+  # Dactyl Nest already has a character, so give it a relatively low weight compared
+  # to the other prehistory locations.
+  prehistoryDactylNest = \
+      LocationGroup("PrehistoryDactylNest", 2, lambda game:game.canAccessPrehistory())
+  (prehistoryDactylNest
       .addLocation(Location("Dactyl Nest 1",0x35F6C0))
       .addLocation(Location("Dactyl Nest 2",0x35F6C4))
-      .addLocation(Location("Dactyl Nest 3",0x35F6C8))
-      .addLocation(Location("Tyrano Lair Kino's Cell",0x35F6DC))
-      .addLocation(BaselineLocation("Reptite Lair", 0x18FC2C, 0x18FC2F)) #Reptite Lair Key Item
+      .addLocation(Location("Dactyl Nest 3",0x35F6C8)) 
   )
 
   # MelchiorRefinements
   melchiorsRefinementslocations = \
-      LocationGroup("MelchiorRefinements", 2, lambda game:game.canAccessMelchiorsRefinements())
+      LocationGroup("MelchiorRefinements", 12, lambda game:game.canAccessMelchiorsRefinements())
   (melchiorsRefinementslocations
-      .addLocation(BaselineLocation("Melchior's Refinements", 0x3805DE, 0x3805E0))
+      .addLocation(BaselineLocation("Melchior's Refinements", 0x3805DE, 0x3805E0, LootTiers.High))
   )
 
   # Frog's Burrow
   frogsBurrowLocation = \
-      LocationGroup("FrogsBurrowLocation", 1, lambda game:game.canAccessBurrowItem())
+      LocationGroup("FrogsBurrowLocation", 3, lambda game:game.canAccessBurrowItem())
   (frogsBurrowLocation
-      .addLocation(BaselineLocation("Frog's Burrow Left Chest", 0x3891DE, 0x3891E0))
+      .addLocation(BaselineLocation("Frog's Burrow Left Chest", 0x3891DE, 0x3891E0, LootTiers.MidHigh))
   )
   
+  # Prehistory
+  locationGroups.append(prehistoryForestMazeLocations)
+  locationGroups.append(prehistoryReptiteLocations)
+  locationGroups.append(prehistoryDactylNest)
+  
+  # Dark Ages
   locationGroups.append(darkagesLocations)
+  
+  # 600/1000AD
   locationGroups.append(fionaShrineLocations)
-  locationGroups.append(futureOpenLocations)
-  locationGroups.append(futureLabLocations)
-  locationGroups.append(genoDomeLocations)
-  locationGroups.append(factoryLocations)
   locationGroups.append(giantsClawLocations)
   locationGroups.append(northernRuinsLocations)
   locationGroups.append(guardiaTreasuryLocations)
@@ -710,13 +786,21 @@ def initLocationGroups():
   locationGroups.append(cathedralLocations)
   locationGroups.append(guardiaCastleLocations)
   locationGroups.append(denadoroLocations)
-  locationGroups.append(sealedLocations)
-  locationGroups.append(prehistoryForestMazeLocations)
-  locationGroups.append(prehistoryOtherLocations)
+  locationGroups.append(magicCaveLocations)
   locationGroups.append(melchiorsRefinementslocations)
   locationGroups.append(frogsBurrowLocation)
   locationGroups.append(earlyOzziesFortLocations)
   locationGroups.append(lateOzziesFortLocations)
+  
+  # Future
+  locationGroups.append(futureOpenLocations)
+  locationGroups.append(futureLabLocations)
+  locationGroups.append(futureSewersLocations)
+  locationGroups.append(genoDomeLocations)
+  locationGroups.append(factoryLocations)
+  
+  # Sealed Locations (chests and doors)
+  locationGroups.append(sealedLocations)
   
 # end initLocationGroups function
 
@@ -833,7 +917,7 @@ def determineKeyItemPlacement_impl(charLocations, chosenLocations, remainingKeyI
           # select a location randomly from the list
           if locationGroup != None:
             locationGroup.addLocation(location)
-            group.setWeight(group.getWeight() + 2)
+            locationGroup.setWeight(locationGroup.getWeight() + 2)
             
           # get the max rand value from the combined weightings of the location groups
           # This will be used to help select a location group
@@ -907,23 +991,59 @@ def writeSpoilerLog(chosenLocations, charLocations):
 
 
 #
-# Get a random treasure.
+# Get a random treasure for a baseline location.
+# This function uses the loog selection algorithm from treasures.py.
+# Loot tiers are set as part of the location construction.
+#
+# param: location - BaselineLocation that needs loot 
 #
 # return: The item code for a random treasure
 #
-def getRandomTreasure():
+def getRandomTreasure(location):
   treasureCode = 0;
-  roll = rand.randint(1, 20)
-  if roll > 16:
-    # 20% chance of top top tier loot
-    treasureCode = rand.choice(treasure.hlvlitems + 
-                               treasure.alvlitems + 
-                               treasure.hlvlconsumables)
-  else:
-    # otherwise high tier
-    treasureCode = rand.choice(treasure.glvlitems + 
-                               treasure.hlvlitems + 
-                               treasure.glvlconsumables)
+  
+  lootTier = location.getLootTier()
+  # loot selection algorithm stolen from treasurewriter.py
+  rand_num = rand.randrange(0,11,1)
+  if lootTier == LootTiers.Mid:
+    if rand_num > 5:
+      treasureCode = rand.choice(treasure.plvlconsumables + \
+                                 treasure.mlvlconsumables)
+    else:
+      rand_num = rand.randrange(0,100,1)
+      if rand_num > 74:
+        if rand_num > 94:
+          treasureCode = rand.choice(treasure.hlvlitems)
+        else:
+          treasureCode = rand.choice(treasure.glvlitems)
+      else:
+        treasureCode = rand.choice(treasure.mlvlitems)
+  elif lootTier == LootTiers.MidHigh:
+    if rand_num > 5:
+      treasureCode = rand.choice(treasure.mlvlconsumables + \
+                                 treasure.glvlconsumables)
+    else:
+      rand_num = rand.randrange(0,100,1)
+      if rand_num > 74:
+        if rand_num > 94:
+          treasureCode = rand.choice(treasure.alvlitems)
+        else:
+          treasureCode = rand.choice(treasure.hlvlitems)
+      else:
+        treasureCode = rand.choice(treasure.glvlitems)
+  elif lootTier == LootTiers.High:
+    if rand_num > 6:
+      treasureCode = rand.choice(treasure.glvlconsumables + \
+                                 treasure.hlvlconsumables + \
+                                 treasure.alvlconsumables)
+    else:
+      rand_num = rand.randrange(0,100,1)
+      if rand_num > 74:
+        treasureCode = rand.choice(treasure.alvlitems)
+      else:
+        treasureCode = rand.choice(treasure.glvlitems + \
+                                   treasure.hlvlitems)
+                                
   return treasureCode
 # end getRandomTreasure function
     
@@ -963,7 +1083,7 @@ def writeKeyItems(outFile, charLocations, lockedChars, earlyPendant):
       if type(location) == BaselineLocation and (not location in chosenLocations):
         # This is a baseline location without a key item.  
         # Assign a piece of treasure.
-        treasureCode = getRandomTreasure()
+        treasureCode = getRandomTreasure(location)
         romFile.seek(location.getPointer())
         romFile.write(st.pack("B", treasureCode))
         romFile.seek(location.getPointer2())
