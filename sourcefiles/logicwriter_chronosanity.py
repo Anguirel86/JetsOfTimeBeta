@@ -10,7 +10,7 @@ import treasurewriter as treasure
 #
 # This script file implements the Chronosanity logic.
 # It uses a weighted random distribution to place key items
-# based on logical access rules per location.  Any baeline key
+# based on logical access rules per location.  Any baseline key
 # item location that does not get a key item assigned to it will
 # be assigned a random treasure.
 #
@@ -71,11 +71,12 @@ class LootTiers(enum.Enum):
 #   - Provides logic convenience functions
 #  
 class Game:
-  def __init__(self):
+  def __init__(self, charLocations):
     self.characters = set()
     self.keyItems = set()
     self.earlyPendant = False
     self.lockedChars = False
+    self.charLocations = charLocations
   
   #
   # Get the number of key items that have been acquired by the player.
@@ -156,10 +157,10 @@ class Game:
   # Determine which characters are available based on what key items/time periods
   # are available to the player.
   #
-  # param: charLocations - A dictionary of locations to characters that is generated
-  #                        by characterwriter.py.
+  # The character locations are provided at object construction.  The dictionary
+  # is provided as output from running the characterwriter.py script.
   #
-  def updateAvailableCharacters(self, charLocations):
+  def updateAvailableCharacters(self):
     # charLocations is a dictionary that uses the location name as
     # a key and the character data structure as a value.
     #
@@ -167,18 +168,18 @@ class Game:
     #       Use the ID to get the correct character from the enum.
     #
     # The first four characters are always available.
-    self.addCharacter(Characters(charLocations['start'][0]))
-    self.addCharacter(Characters(charLocations['start2'][0]))
-    self.addCharacter(Characters(charLocations['cathedral'][0]))
-    self.addCharacter(Characters(charLocations['castle'][0]))
+    self.addCharacter(Characters(self.charLocations['start'][0]))
+    self.addCharacter(Characters(self.charLocations['start2'][0]))
+    self.addCharacter(Characters(self.charLocations['cathedral'][0]))
+    self.addCharacter(Characters(self.charLocations['castle'][0]))
     
     # The remaining three characters are progression gated.
     if self.canAccessFuture():
-      self.addCharacter(Characters(charLocations['proto'][0]))
+      self.addCharacter(Characters(self.charLocations['proto'][0]))
     if self.canAccessDactylCharacter():
-      self.addCharacter(Characters(charLocations['dactyl'][0]))
+      self.addCharacter(Characters(self.charLocations['dactyl'][0]))
     if self.hasMasamune():
-      self.addCharacter(Characters(charLocations['burrow'][0]))
+      self.addCharacter(Characters(self.charLocations['burrow'][0]))
   # end updateAvailableCharacters function
     
   #
@@ -317,9 +318,10 @@ class EventLocation(Location):
 
 #
 # This class represents a normal check in the randomizer.
-# EventLocation provides all of the functionality needed,
-# but this lets us determine which are the base checks vs. 
-# sealed chests.
+# EventLocation provides all of the pointers needed. 
+# This class allows for a loot tier to be specified, that 
+# will be used to assign a piece of loot to locations that
+# were nor assigned a key item.
 #
 class BaselineLocation(EventLocation):
   def __init__(self, name, pointer, pointer2, lootTier):
@@ -342,11 +344,21 @@ class BaselineLocation(EventLocation):
 # the same access rule.
 #
 class LocationGroup:
-  def __init__(self, name, weight, accessRule):
+  #
+  # Constructor for a LocationGroup.
+  #
+  # param: name - The name of this LocationGroup
+  # param: weight - The initial weighting factor of this LocationGroup
+  # param: accessRule - A function used to determine if this LocationGroup is accessible
+  # param: weightDecay - Optional function to define weight decay of this LocationGroup
+  #
+  def __init__(self, name, weight, accessRule, weightDecay = None):
     self.name = name
     self.locations = []
-    self.accessRule = accessRule
     self.weight = weight
+    self.accessRule = accessRule
+    self.weightDecay = weightDecay
+    self.weightStack = []
     
     
   #
@@ -373,6 +385,7 @@ class LocationGroup:
   #
   def getWeight(self):
     return self.weight
+    
   #
   # Set the weight used when selecting locations from this group.
   # The weight cannot be set less than 1.
@@ -383,6 +396,27 @@ class LocationGroup:
     if weight < 1:
       weight = 1
     self.weight = weight
+  
+  #
+  # This function is used to decay the weight value of this 
+  # LocationGroup when a location is chosen from it.
+  #
+  def decayWeight(self):
+    self.weightStack.append(self.weight)
+    if self.weightDecay == None:
+      # If no weight decay function was given, reduce the weight of this
+      # LocationGroup to 1 to make it unlikelyto get any other items.
+      self.setWeight(1)
+    else:
+      self.setWeight(self.weightDecay(self.weight))
+  
+  #
+  # Undo a previous weight decay of this LocationGroup.
+  # The previous weight values are stored in the weightStack.
+  #
+  def undoWeightDecay(self):
+    if len(self.weightStack) > 0:
+      self.setWeight(self.weightStack.pop())
   
   #
   # Get the number of available locations in this group.
@@ -434,7 +468,7 @@ def initLocationGroups():
   # Mount Woe does not go away in the randomizer, so it
   # is being considered for key item drops.
   darkagesLocations = \
-      LocationGroup("Darkages", 10, lambda game:game.canAccessDarkAges())
+      LocationGroup("Darkages", 30, lambda game:game.canAccessDarkAges())
   (darkagesLocations
       .addLocation(Location("Mt Woe 1st Screen",0x35F770))
       .addLocation(Location("Mt Woe 2nd Screen 1",0x35F748))
@@ -454,14 +488,14 @@ def initLocationGroups():
 
   # Fiona Shrine (Key Item only)
   fionaShrineLocations = \
-      LocationGroup("Fionashrine", 3, lambda game:game.canAccessFionasShrine())
+      LocationGroup("Fionashrine", 2, lambda game:game.canAccessFionasShrine())
   (fionaShrineLocations
       .addLocation(BaselineLocation("Fiona's Shrine", 0x6EF5E, 0x6EF61, LootTiers.MidHigh))
   )
 
   # Future
   futureOpenLocations = \
-      LocationGroup("FutureOpen", 12, lambda game:game.canAccessFuture())
+      LocationGroup("FutureOpen", 20, lambda game:game.canAccessFuture())
   (futureOpenLocations
       # Chests
       .addLocation(Location("Arris Dome",0x35F5C8))
@@ -472,7 +506,7 @@ def initLocationGroups():
   )
   
   futureSewersLocations = \
-      LocationGroup("FutureSewers", 3, lambda game:game.canAccessFuture())
+      LocationGroup("FutureSewers", 9, lambda game:game.canAccessFuture())
   (futureSewersLocations
       .addLocation(Location("Sewers 1",0x35F614))     
       .addLocation(Location("Sewers 2",0x35F618))
@@ -480,7 +514,7 @@ def initLocationGroups():
   )
   
   futureLabLocations = \
-      LocationGroup("FutureLabs", 6, lambda game:game.canAccessFuture())
+      LocationGroup("FutureLabs", 15, lambda game:game.canAccessFuture())
   (futureLabLocations
       .addLocation(Location("Lab 16 1",0x35F5B8))
       .addLocation(Location("Lab 16 2",0x35F5BC))
@@ -494,7 +528,7 @@ def initLocationGroups():
   )
   
   genoDomeLocations = \
-      LocationGroup("GenoDome", 11, lambda game:game.canAccessFuture())
+      LocationGroup("GenoDome", 33, lambda game:game.canAccessFuture())
   (genoDomeLocations
       .addLocation(Location("Geno Dome 1st Floor 1",0x35F630))
       .addLocation(Location("Geno Dome 1st Floor 2",0x35F634))
@@ -512,7 +546,7 @@ def initLocationGroups():
   )
   
   factoryLocations = \
-      LocationGroup("Factory", 10, lambda game:game.canAccessFuture())
+      LocationGroup("Factory", 30, lambda game:game.canAccessFuture())
   (factoryLocations
       .addLocation(Location("Factory Ruins Left - Auxillary Console",0x35F5E8))
       .addLocation(Location("Factory Ruins Left - Security Center (Right)",0x35F5EC))
@@ -532,7 +566,7 @@ def initLocationGroups():
 
   # GiantsClawLocations
   giantsClawLocations = \
-      LocationGroup("Giantsclaw", 11, lambda game:game.canAccessGiantsClaw())
+      LocationGroup("Giantsclaw", 30, lambda game:game.canAccessGiantsClaw())
   (giantsClawLocations
       .addLocation(Location("Giant's Claw Kino's Cell",0x35F468))
       .addLocation(Location("Giant's Claw Traps",0x35F46C))
@@ -547,7 +581,7 @@ def initLocationGroups():
 
   # Northern Ruins
   northernRuinsLocations = \
-      LocationGroup("NorthernRuins", 9, \
+      LocationGroup("NorthernRuins", 25, \
           lambda game:(game.canAccessRuins() and game.canAccessSealedChests()))
   (northernRuinsLocations
       # Sealed chests in Northern Ruins
@@ -558,7 +592,7 @@ def initLocationGroups():
 
   # Guardia Treasury
   guardiaTreasuryLocations = \
-      LocationGroup("GuardiaTreasury", 12, lambda game:game.canAccessKingsTrial())
+      LocationGroup("GuardiaTreasury", 36, lambda game:game.canAccessKingsTrial())
   (guardiaTreasuryLocations
       .addLocation(Location("Guardia Basement 1", 0x35F41C))
       .addLocation(Location("Guardia Basement 2", 0x35F420))
@@ -575,7 +609,7 @@ def initLocationGroups():
   # The final two chests are locked behind the trio battle.  Only consider these if
   # the player has access to the Dark Ages.
   earlyOzziesFortLocations = \
-      LocationGroup("Ozzie's Fort Front", 2, \
+      LocationGroup("Ozzie's Fort Front", 6, \
           lambda game: (game.canAccessFuture() or game.canAccessPrehistory()))
   (earlyOzziesFortLocations
       .addLocation(Location("Ozzie's Fort Guillotines 1",0x35F554))
@@ -585,7 +619,7 @@ def initLocationGroups():
   )
   
   lateOzziesFortLocations = \
-      LocationGroup("Ozzie's Fort Back", 2, lambda game: game.canAccessDarkAges())
+      LocationGroup("Ozzie's Fort Back", 6, lambda game: game.canAccessDarkAges())
   (lateOzziesFortLocations
       .addLocation(Location("Ozzie's Fort Final 1",0x35F564))
       .addLocation(Location("Ozzie's Fort Final 2",0x35F568))
@@ -594,33 +628,42 @@ def initLocationGroups():
   # Open locations always available with no access requirements
   # Open locations are split into multiple groups so that weighting
   # can be applied separately to individual areas.
-  openLocations = LocationGroup("Open", 5, lambda game: True)
+  openLocations = LocationGroup("Open", 10, \
+       lambda game: True, \
+       lambda weight:int(weight * 0.2))
   (openLocations
       .addLocation(Location("Truce Mayor's House F1",0x35F40C))
       .addLocation(Location("Truce Mayor's House F2",0x35F410))
       .addLocation(Location("Forest Ruins",0x35F42C))
-      .addLocation(Location("Heckran Cave Sidetrack",0x35F430))
-      .addLocation(Location("Heckran Cave Entrance",0x35F434))
-      .addLocation(Location("Heckran Cave 1",0x35F438))
-      .addLocation(Location("Heckran Cave 2",0x35F43C))
       .addLocation(Location("Porre Mayor's House F2",0x35F440))
       .addLocation(Location("Truce Canyon 1",0x35F470))
       .addLocation(Location("Truce Canyon 2",0x35F474))
       .addLocation(Location("Fiona's House 1",0x35F4FC))
       .addLocation(Location("Fiona's House 2",0x35F500))
-      .addLocation(Location("Yakra's Room",0x35F584))
       .addLocation(Location("Cursed Woods 1",0x35F4A4))
       .addLocation(Location("Cursed Woods 2",0x35F4A8))
       .addLocation(Location("Frog's Burrow Right Chest",0x35F4AC))
-      #Key Items
+  )
+  
+  openKeys = LocationGroup("OpenKeys", 5, lambda game: True)
+  (openKeys
       .addLocation(BaselineLocation("Zenan Bridge", 0x393C82, 0x393C84, LootTiers.Mid))
-      .addLocation(BaselineLocation("Taban", 0x35F888, 0x35F88A, LootTiers.Mid))
       .addLocation(BaselineLocation("Snail Stop", 0x380C42, 0x380C5B, LootTiers.Mid))
       .addLocation(BaselineLocation("Lazy Carpenter", 0x3966B, 0x3966D, LootTiers.Mid))
   )
   
+  heckranLocations = \
+      LocationGroup("Heckran", 4, lambda game: True)
+  (heckranLocations
+      .addLocation(Location("Heckran Cave Sidetrack",0x35F430))
+      .addLocation(Location("Heckran Cave Entrance",0x35F434))
+      .addLocation(Location("Heckran Cave 1",0x35F438))
+      .addLocation(Location("Heckran Cave 2",0x35F43C))
+      .addLocation(BaselineLocation("Taban", 0x35F888, 0x35F88A, LootTiers.Mid))
+  )
+  
   guardiaCastleLocations = \
-      LocationGroup("GuardiaCastle", 1, lambda game: True)
+      LocationGroup("GuardiaCastle", 3, lambda game: True)
   (guardiaCastleLocations
       .addLocation(Location("King's Room (Present)",0x35F414))
       .addLocation(Location("Queen's Room (Present)",0x35F418))
@@ -635,7 +678,7 @@ def initLocationGroups():
   )
   
   cathedralLocations = \
-      LocationGroup("CathedralLocations", 2, lambda game: True)
+      LocationGroup("CathedralLocations", 6, lambda game: True)
   (cathedralLocations
       .addLocation(Location("Manoria Cathedral 1",0x35F488))
       .addLocation(Location("Manoria Cathedral 2",0x35F48C))
@@ -651,10 +694,11 @@ def initLocationGroups():
       .addLocation(Location("Manoria Bromide Room 3",0x35F598))
       .addLocation(Location("Manoria Magus Shrine 1",0x35F59C))
       .addLocation(Location("Manoria Magus Shrine 2",0x35F5A0))
+      .addLocation(Location("Yakra's Room",0x35F584))
   )
   
   denadoroLocations = \
-      LocationGroup("DenadoroLocations", 3, lambda game:True)
+      LocationGroup("DenadoroLocations", 6, lambda game:True)
   (denadoroLocations
       .addLocation(Location("Denadoro Mts Screen 2 1",0x35F4B0))
       .addLocation(Location("Denadoro Mts Screen 2 2",0x35F4B4))
@@ -680,7 +724,9 @@ def initLocationGroups():
       
   # Sealed locations
   sealedLocations = \
-      LocationGroup("SealedLocations", 17, lambda game:game.canAccessSealedChests())
+      LocationGroup("SealedLocations", 30, 
+          lambda game:game.canAccessSealedChests(),
+          lambda weight:int(weight * 0.3))
   (sealedLocations
       # Sealed Doors
       .addLocation(Location("Bangor Dome Seal 1", 0x35F5A4))
@@ -714,7 +760,7 @@ def initLocationGroups():
   # Sealed chest in the magic cave.
   # Requires both powered up pendant and Magus' Castle access
   magicCaveLocations = \
-      LocationGroup("Magic Cave", 2, \
+      LocationGroup("Magic Cave", 4, \
           lambda game: game.canAccessSealedChests() and game.canAccessMagusCastle())
   (magicCaveLocations
       .addLocation(EventLocation("Magic Cave",0x1B31C7,0x1B31CA))
@@ -722,7 +768,7 @@ def initLocationGroups():
   
   # Prehistory
   prehistoryForestMazeLocations = \
-      LocationGroup("PrehistoryForestMaze", 6, lambda game:game.canAccessPrehistory())
+      LocationGroup("PrehistoryForestMaze", 18, lambda game:game.canAccessPrehistory())
   (prehistoryForestMazeLocations
       .addLocation(Location("Mystic Mtn Stream",0x35F678))
       .addLocation(Location("Forest Maze 1",0x35F67C))
@@ -737,18 +783,17 @@ def initLocationGroups():
   )
   
   prehistoryReptiteLocations = \
-      LocationGroup("PrehistoryReptite", 9, lambda game:game.canAccessPrehistory())
+      LocationGroup("PrehistoryReptite", 27, lambda game:game.canAccessPrehistory())
   (prehistoryReptiteLocations
       .addLocation(Location("Reptite Lair Reptites 1",0x35F6B8))
       .addLocation(Location("Reptite Lair Reptites 2",0x35F6BC))
-      #.addLocation(Location("Tyrano Lair Kino's Cell",0x35F6DC)) # This chest is inaccessible after Tyrano Lair
       .addLocation(BaselineLocation("Reptite Lair", 0x18FC2C, 0x18FC2F, LootTiers.MidHigh)) #Reptite Lair Key Item
   )
   
   # Dactyl Nest already has a character, so give it a relatively low weight compared
   # to the other prehistory locations.
   prehistoryDactylNest = \
-      LocationGroup("PrehistoryDactylNest", 2, lambda game:game.canAccessPrehistory())
+      LocationGroup("PrehistoryDactylNest", 6, lambda game:game.canAccessPrehistory())
   (prehistoryDactylNest
       .addLocation(Location("Dactyl Nest 1",0x35F6C0))
       .addLocation(Location("Dactyl Nest 2",0x35F6C4))
@@ -757,14 +802,14 @@ def initLocationGroups():
 
   # MelchiorRefinements
   melchiorsRefinementslocations = \
-      LocationGroup("MelchiorRefinements", 12, lambda game:game.canAccessMelchiorsRefinements())
+      LocationGroup("MelchiorRefinements", 15, lambda game:game.canAccessMelchiorsRefinements())
   (melchiorsRefinementslocations
       .addLocation(BaselineLocation("Melchior's Refinements", 0x3805DE, 0x3805E0, LootTiers.High))
   )
 
   # Frog's Burrow
   frogsBurrowLocation = \
-      LocationGroup("FrogsBurrowLocation", 3, lambda game:game.canAccessBurrowItem())
+      LocationGroup("FrogsBurrowLocation", 9, lambda game:game.canAccessBurrowItem())
   (frogsBurrowLocation
       .addLocation(BaselineLocation("Frog's Burrow Left Chest", 0x3891DE, 0x3891E0, LootTiers.MidHigh))
   )
@@ -783,6 +828,8 @@ def initLocationGroups():
   locationGroups.append(northernRuinsLocations)
   locationGroups.append(guardiaTreasuryLocations)
   locationGroups.append(openLocations)
+  locationGroups.append(openKeys)
+  locationGroups.append(heckranLocations)
   locationGroups.append(cathedralLocations)
   locationGroups.append(guardiaCastleLocations)
   locationGroups.append(denadoroLocations)
@@ -805,18 +852,16 @@ def initLocationGroups():
 # end initLocationGroups function
 
 #
-# Get a list of location that are available for key item placement.
+# Get a list of location groups that are available for key item placement.
 #
 # param: game - Game object used to determine location access
-# param: chosenLocations - List of locations that are already chosen
-# param: charLocation - Dictionary of character and their locations
 #
 # return: List of all available locations
 #
-def getAvailableLocations(game, chosenLocations, charLocations):
+def getAvailableLocations(game):
   # Have the game object update what characters are available based on the
   # currently available items and time periods.
-  game.updateAvailableCharacters(charLocations)
+  game.updateAvailableCharacters()
   
   # Get a list of all accessible location groups
   accessibleLocationGroups = []
@@ -835,12 +880,40 @@ def getAvailableLocations(game, chosenLocations, charLocations):
 # return: Full list of the game's key items
 #
 def getInitialKeyItems():
-  keyItemList = [keyItem for keyItem in (KeyItems)]
-  # Add additional copies of the gate key and pendant to the list so they are
-  # slightly more likely to turn up early.  This will make it more likely that
-  # the future and prehistory will open up a little sooner, increasing the
-  # pool of potential locations.
-  keyItemList.extend([KeyItems.gatekey, KeyItems.pendant])
+  # NOTE:
+  # The initial list of key items contains multiples of most of the key items, and
+  # not in equal number.  The pendant and gate key are more heavily weighted
+  # so that they appear earlier in the run, opening up more potential checks.
+  # The ruby knife, dreamstone, clone, and trigger only appear once to reduce
+  # the frequency of extremely early go mode from open checks.
+  # The hilt and blade show up 3 times each, also to reduce early go mode through
+  # Magus' Castle to a reasonable number.
+  
+  # Seed the list with 5 copies of each item
+  keyItemList = [key for key in (KeyItems)]
+  keyItemList.extend([key for key in (KeyItems)])
+  keyItemList.extend([key for key in (KeyItems)])
+  keyItemList.extend([key for key in (KeyItems)])
+  keyItemList.extend([key for key in (KeyItems)])
+  
+  # remove all but 1 copy of the dreamstone/ruby knife/clone/trigger
+  keyItemList[:] = [x for x in keyItemList if x != KeyItems.rubyknife]
+  keyItemList[:] = [x for x in keyItemList if x != KeyItems.dreamstone]
+  keyItemList[:] = [x for x in keyItemList if x != KeyItems.clone]
+  keyItemList[:] = [x for x in keyItemList if x != KeyItems.ctrigger]
+  keyItemList.extend([KeyItems.rubyknife, KeyItems.dreamstone, 
+                      KeyItems.clone, KeyItems.ctrigger])
+  
+  # remove all but 3 copies of the hilt/blade
+  keyItemList.remove(KeyItems.hilt)
+  keyItemList.remove(KeyItems.hilt)
+  keyItemList.remove(KeyItems.blade)
+  keyItemList.remove(KeyItems.blade)
+  
+  # Add additional copies of the pendant and gate key
+  keyItemList.extend([KeyItems.gatekey, KeyItems.gatekey, KeyItems.gatekey, 
+                      KeyItems.pendant, KeyItems.pendant, KeyItems.pendant])
+                      
   return keyItemList
 # end getInitialKeyItems
 
@@ -854,18 +927,18 @@ def getInitialKeyItems():
 #
 def determineKeyItemPlacement(charlocs, lockedChars, earlyPendant):
   initLocationGroups()
-  game = Game()
+  game = Game(charlocs)
   game.setEarlyPendant(earlyPendant)
   game.setLockedCharacters(lockedChars)
   chosenLocations = []
   remainingKeyItems = getInitialKeyItems()
-  return determineKeyItemPlacement_impl(charlocs, chosenLocations, remainingKeyItems, game)
+  return determineKeyItemPlacement_impl(chosenLocations, remainingKeyItems, game)
 # end place_key_items
 
 
 #
 # NOTE: Do not call this function directly. This will be called 
-#       by placeKeyItems(charlocs) after setting up the parameters
+#       by placeKeyItems after setting up the parameters
 #       needed by this function.
 #
 # This function will recursively determine key item locations
@@ -881,7 +954,6 @@ def determineKeyItemPlacement(charlocs, lockedChars, earlyPendant):
 #   Lower the weight of the selected group to reduce the chance of it being picked again
 #
 #
-# param: charLocations - Dictionary of characters to locations they were placed
 # param: chosenLocations - List of locations already chosen for key items
 # param: remainingKeyItems - List of key items remaining to be placed
 # param: game - Game object used to determine logic
@@ -890,13 +962,13 @@ def determineKeyItemPlacement(charlocs, lockedChars, earlyPendant):
 #             A Boolean indicating whether or not key item placement was successful
 #             A list of locations with key items assigned
 #
-def determineKeyItemPlacement_impl(charLocations, chosenLocations, remainingKeyItems, game):
+def determineKeyItemPlacement_impl(chosenLocations, remainingKeyItems, game):
   if len(remainingKeyItems) == 0:
     # We've placed all key items.  This is our breakout condition
     return True, chosenLocations
   else:
     # We still have key items to place.
-    availableLocations = getAvailableLocations(game, chosenLocations, charLocations)
+    availableLocations = getAvailableLocations(game)
     if len(availableLocations) == 0:
       # This item configuration is not completable. 
       return False, chosenLocations
@@ -917,7 +989,7 @@ def determineKeyItemPlacement_impl(charLocations, chosenLocations, remainingKeyI
           # select a location randomly from the list
           if locationGroup != None:
             locationGroup.addLocation(location)
-            locationGroup.setWeight(locationGroup.getWeight() + 2)
+            locationGroup.undoWeightDecay()
             
           # get the max rand value from the combined weightings of the location groups
           # This will be used to help select a location group
@@ -937,16 +1009,22 @@ def determineKeyItemPlacement_impl(charLocations, chosenLocations, remainingKeyI
           # Select a random location from the chosen location group.
           # Reduce the weighting on that location group to lower the chance
           # that it will be selected again.
-          #
-          # TODO - Rework the way that weighting reduction for chosen 
-          #        location groups is handled.  
-          #        Maybe keep track of the number of locations chosen in each
-          #        LocationGroup object and add a "weightDecay" function.
-          #        This would let different location groups decay at different rates.
           location = rand.choice(group.getLocations())
           group.removeLocation(location)
-          group.setWeight(group.getWeight() - 2)
+          group.decayWeight()
           chosenLocations.append(location)
+          
+          # If 2/3 of the key items have been placed
+          # then remove the key item bias from the remaining list.
+          # This is to slightly reduce the occurrence of the lowest weighted
+          # items from showing up dispraportionately on extremely late checks
+          # like Mount Woe or the Guardia Treasury.
+          if game.getKeyItemCount() == 10:
+            newList = []
+            for key in remainingKeyItems:
+              if not key in newList:
+                newList.append(key)
+            remainingKeyItems = newList
           
           # select a key item for this location
           keyItem = rand.choice(remainingKeyItems)
@@ -963,7 +1041,7 @@ def determineKeyItemPlacement_impl(charLocations, chosenLocations, remainingKeyI
           keyItemTemp = keyItem
           # recurse and try to place the next key item.
           keyItemConfirmed, returnedChosenLocations = \
-              determineKeyItemPlacement_impl(charLocations, chosenLocations, remainingKeyItems, game)
+              determineKeyItemPlacement_impl(chosenLocations, remainingKeyItems, game)
 
               
 # end determineKeyItemPlacement_impl recursive function
@@ -1005,6 +1083,7 @@ def getRandomTreasure(location):
   lootTier = location.getLootTier()
   # loot selection algorithm stolen from treasurewriter.py
   rand_num = rand.randrange(0,11,1)
+  # Mid tier loot - early checks
   if lootTier == LootTiers.Mid:
     if rand_num > 5:
       treasureCode = rand.choice(treasure.plvlconsumables + \
@@ -1018,6 +1097,8 @@ def getRandomTreasure(location):
           treasureCode = rand.choice(treasure.glvlitems)
       else:
         treasureCode = rand.choice(treasure.mlvlitems)
+        
+  # Mid-high tier loot - moderately gated or more difficult checks
   elif lootTier == LootTiers.MidHigh:
     if rand_num > 5:
       treasureCode = rand.choice(treasure.mlvlconsumables + \
@@ -1031,6 +1112,8 @@ def getRandomTreasure(location):
           treasureCode = rand.choice(treasure.hlvlitems)
       else:
         treasureCode = rand.choice(treasure.glvlitems)
+  
+  # High tier loot - Late or difficult checks
   elif lootTier == LootTiers.High:
     if rand_num > 6:
       treasureCode = rand.choice(treasure.glvlconsumables + \
@@ -1051,6 +1134,8 @@ def getRandomTreasure(location):
   
 #
 # Determine key item placements and write them to the provided ROM file.
+# Additionally, a spoiler log is written that lists where the key items and
+# characters were placed.
 #
 # param: outFile - File name of the output ROM
 # param: charLocations - Dictionary of character locations from characterwriter.py
@@ -1077,7 +1162,7 @@ def writeKeyItems(outFile, charLocations, lockedChars, earlyPendant):
       romFile.write(st.pack("B", location.getKeyItem().value))
   
   # Go through any baseline locations not assigned an item and place a 
-  # piece of treasure.
+  # piece of treasure. Treasure quality is based on the location's loot tier.
   for locationGroup in locationGroups:
     for location in locationGroup.getLocations():
       if type(location) == BaselineLocation and (not location in chosenLocations):
