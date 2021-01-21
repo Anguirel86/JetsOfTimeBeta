@@ -232,6 +232,12 @@ def getGameFlagsFrame(window):
   datastore.flags['q'] = var
   tk.Checkbutton(frame, text="Quiet Mode - No Music (q)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
+
+  # Tab Treasures
+  var = tk.IntVar()
+  datastore.flags['tb'] = var
+  tk.Checkbutton(frame, text="Make all treasures tabs(tb)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
   
   # Chronosanity
   def disableChronosanityIncompatibleFlags():
