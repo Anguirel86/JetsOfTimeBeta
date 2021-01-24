@@ -13,7 +13,7 @@ lightning = {"attack_byte": 0x82, "effect": 7, "tech_id": 3, "efpointer": [3,0,0
 spincut = {"attack_byte": 0x04, "effect": 0, "tech_id": 4, "efpointer": [3,0,0,0x3A,0x3B,1,0x3E,0x80,0x80,0x10,4,0x80], 
 "anim": [4,0xD6,0,0x27,4,4,0xFF], "text": [0xB2,0xC9,0xC2,0xC7,0xBC,0xCE,0xCD,0xEF,0xEF,0xEF,0xEF], 
 "descpointer": [0x39,0x3B], "mp_cost": 6, "targeting": [7,0]}
-lightning2 = {"attack_byte": 0x82, "effect": 7, "tech_id": 5, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x0E,0,0],
+lightning2 = {"attack_byte": 0x82, "effect": 7, "tech_id": 5, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x18,0,0],
 "anim": [5,0xF1,0,0x22,5,3,2], "text": [0x2F,0xAB,0xC2,0xC0,0xC1,0xCD,0xC7,0xC2,0xC7,0xC0,0xD6], 
 "descpointer": [0x43,0x3B], "mp_cost": 8, "targeting": [8,0]}
 life = {"attack_byte": 0, "effect": 0, "tech_id": 6, "efpointer": [1,0xD0,0x80,0,0,0,0,0xA0,0,0,0,0], 	
@@ -136,13 +136,13 @@ rockthrow = {"attack_byte": 4, "effect": 0, "tech_id": 0x2C, "efpointer": [3,0,0
 charm = {"attack_byte": 2, "effect": 0xF, "tech_id": 0x2D, "efpointer": [6,0x46,0,0,0,0,0,0x80,0,0,0,0x80],
 "anim": [0x2D,0xC0,5,0xF,0x2D,0x2D,0xFF], "text": [0xA2,0xC1,0xBA,0xCB,0xC6,0xEF,0xEF,0xEF,0xEF,0xEF,0xEF],
 "descpointer": [0x23,0x3E], "mp_cost": 4, "targeting": [7,0]}
-tailspin = {"attack_byte": 2, "effect": 0, "tech_id": 0x2E, "efpointer": [3,0,0,0,0,3,0,0x70,0,0xC,0,0],
+tailspin = {"attack_byte": 2, "effect": 0, "tech_id": 0x2E, "efpointer": [3,0,0,0,0,3,0x12,0x70,0,0x18,0,0],
 "anim": [0x2F,0x61,0,1,0,0,6], "text": [0xB3,0xBA,0xC2,0xC5,0xFF,0xB2,0xC9,0xC2,0xC7,0xEF,0xEF],
-"descpointer": [0x30,0x3E], "mp_cost": 4, "targeting": [7,0]}
+"descpointer": [0x30,0x3E], "mp_cost": 10, "targeting": [7,0]}
 dinotail = {"attack_byte": 4, "effect": 0, "tech_id": 0x2F, "efpointer": [3,0,0,0,0,6,0x3E,0xA0,0,9,4,0],
 "anim": [0x30,0x61,0,1,0x30,1,0xE], "text": [0xA3,0xC2,0xC7,0xC8,0xFF,0xB3,0xBA,0xC2,0xC5,0xEF,0xEF],
 "descpointer": [0x48,0x3E], "mp_cost": 15, "targeting": [8,0]}
-triplekick = {"attack_byte": 4, "effect": 0x13, "tech_id": 0x30, "efpointer": [8,3,0,0x3A,0x3B,5,0x3E,0x80,0,0x32,4,0],
+triplekick = {"attack_byte": 4, "effect": 0x13, "tech_id": 0x30, "efpointer": [8,3,0,0x3A,0x3B,5,0x3E,0x80,0,0x2B,4,0],
 "anim": [0x2E,0x61,5,1,0x25,0x25,0xFF], "text": [0xB3,0xCB,0xC2,0xC9,0xC5,0xBE,0xFF,0xAA,0xC2,0xBC,0xC4],
 "descpointer": [0x5C,0x3E], "mp_cost": 20, "targeting": [7,0]}
 lightning2_2 = {"attack_byte": 0x82, "effect": 7, "tech_id": 0x31, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0xC,0,0],
@@ -164,8 +164,8 @@ darkmist = {"attack_byte": 0x42, "effect": 7, "tech_id": 0x36, "efpointer": [3,0
 "anim": [0x32,0xF8,4,0xA,0x34,0x34,0x2F], "text": [0x2F,0xA3,0xBA,0xCB,0xC4,0xFF,0xAC,0xC2,0xCC,0xCD,0xEF],
 "descpointer": [0xDB,0x3E], "mp_cost": 10, "targeting": [8,0]}
 blackhole = {"attack_byte": 2, "effect": 0x24, "tech_id": 0x37, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,2,0,0],
-"anim": [0x37,0xF1,4,0xA,0x34,0x34,8], "text": [0x2F,0xA1,0xC5,0xBA,0xBC,0xC4,0xFF,0xA7,0xC8,0xC5,0xBE],
-"descpointer": [0xF3,0x3E], "mp_cost": 15, "targeting": [0x1B,0xA]}
+"anim": [0x37,0xF1,4,0xA,0x34,0x34,0x3C], "text": [0x2F,0xA1,0xC5,0xBA,0xBC,0xC4,0xFF,0xB6,0xC2,0xC7,0xBD],
+"descpointer": [0xF3,0x3E], "mp_cost": 15, "targeting": [8,0]}
 darkmatter = {"attack_byte": 0x42, "effect": 7, "tech_id": 0x38, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x2A,0,0],
 "anim": [0x38,0xF1,4,0xA,0x34,0x34,0x1E], "text": [0x2F,0xA3,0xBA,0xCB,0xC4,0xAC,0xBA,0xCD,0xCD,0xBE,0xCB],
 "descpointer": [2,0x3F], "mp_cost": 20, "targeting": [8,0]}
@@ -230,7 +230,7 @@ def randomize_tech_order(character):
           avail_techs.remove(picked_tech)
           i += 1
 
-def randomize_tech_order_balanced(character):
+def randomize_tech_order_balanced(character,balanced_char):
     i = 0
     new_id_names = ["cyclone", "slash", "lightning", "spincut", "lightning2", "life", "confuse", "luminaire", "aura", 
     "provoke", "ice", "cure", "haste", "ice2", "cure2", "life2", "flametoss", "hypnowave", "fire", "napalm", 
@@ -238,12 +238,12 @@ def randomize_tech_order_balanced(character):
     "uzzipunch", "areabomb", "shock", "slurp", "slurpcut", "water", "heal", "leapslash", "water2", "cure2_2", 
     "frogsquash", "kiss", "rollokick", "catattack", "rockthrow", "charm", "tailspin", "dinotail", "triplekick", 
     "lightning2_2", "ice2_2", "fire2_2", "darkbomb", "magicwall", "darkmist", "blackhole", "darkmatter"]
-    avail_techs = character.copy()
-    ultimate_tech = avail_techs[7]
+    avail_techs = balanced_char.copy()
     while i < len(character):
-          picked_tech = rand.choice(avail_techs)
-          while picked_tech == ultimate_tech and i<7:
-              picked_tech = rand.choice(avail_techs)
+          if len(avail_techs) == 1:
+            picked_tech = avail_techs[0]
+          else:
+            picked_tech = avail_techs[rand.randrange(0,len(avail_techs)-1)]
           control_offset = control_pointer + ((character[i]["tech_id"]-1) * 11)
           control_offset1 = control_offset + 3
           write_bytes(picked_tech["attack_byte"],control_offset1)
@@ -262,8 +262,9 @@ def randomize_tech_order_balanced(character):
           targeting_offset = targeting_pointer + ((character[i]["tech_id"]-1) * 2)
           write_bytes(picked_tech["targeting"],targeting_offset)
           new_ids[new_id_names[picked_tech["tech_id"]-1]] = character[i]["tech_id"]
-          avail_techs.remove(picked_tech)
+          while picked_tech in avail_techs: avail_techs.remove(picked_tech)
           i += 1
+
 
 def rewrite_menu_techs():
     menu_start = 0x3FF831
@@ -435,10 +436,10 @@ def rewrite_combo_techs():
     file_pointer.seek(combo_tech_address)
     file_pointer.write(st.pack("B",0x80 | new_ids["rockthrow"]))
     file_pointer.seek(combo_tech_address+1)
-    file_pointer.write(st.pack("B",new_ids["cyclone"]))
+    file_pointer.write(st.pack("B",new_ids["spincut"]))
     combo_tech_address += 11
     file_pointer.seek(combo_tech_requirements)
-    file_pointer.write(st.pack("B",new_ids["cyclone"]))
+    file_pointer.write(st.pack("B",new_ids["spincut"]))
     file_pointer.seek(combo_tech_requirements+1)
     file_pointer.write(st.pack("B",new_ids["rockthrow"] - 40))
     combo_tech_requirements += 3
@@ -1018,9 +1019,66 @@ def take_pointer_balanced(pointer):
     frog = [slurp,slurpcut,water,heal,leapslash,water2,cure2_2,frogsquash]
     ayla = [kiss,rollokick,catattack,rockthrow,charm,tailspin,dinotail,triplekick]
     magus = [lightning2_2,ice2_2,fire2_2,darkbomb,magicwall,darkmist,blackhole,darkmatter]
+    b_crono = [cyclone,cyclone,cyclone,cyclone,cyclone,cyclone,cyclone,cyclone,
+             slash,slash,slash,slash,slash,slash,slash,
+             lightning,lightning,lightning,lightning,lightning,lightning,
+             spincut,spincut,spincut,spincut,
+             lightning2,lightning2,lightning2,
+             life,life,life,life,life,
+             confuse,
+             luminaire,luminaire]
+    b_marle = [aura,aura,aura,aura,aura,aura,aura,
+             provoke,provoke,provoke,provoke,provoke,provoke,provoke,provoke,
+             ice,ice,ice,ice,ice,ice,
+             cure,cure,cure,cure,cure,
+             haste,
+             ice2,ice2,
+             cure2,cure2,cure2,life2,
+             life2,life2,life2]
+    b_lucca = [flametoss,flametoss,flametoss,flametoss,flametoss,flametoss,flametoss,flametoss,
+             hypnowave,hypnowave,hypnowave,hypnowave,
+             fire,fire,fire,fire,fire,fire,
+             napalm,napalm,napalm,napalm,napalm,
+             protect,protect,protect,protect,protect,protect,protect,
+             fire2,fire2,
+             megabomb,megabomb,megabomb,
+             flare]
+    b_robo = [rocketpunch,rocketpunch,rocketpunch,rocketpunch,rocketpunch,rocketpunch,rocketpunch,rocketpunch,
+            curebeam,curebeam,curebeam,curebeam,curebeam,curebeam,curebeam,
+            laserspin,laserspin,laserspin,laserspin,laserspin,laserspin,
+            robotackle,robotackle,
+            healbeam,healbeam,healbeam,
+            uzzipunch,
+            areabomb,areabomb,areabomb,areabomb,areabomb,
+            shock,shock,shock,shock]
+    b_frog = [slurp,slurp,slurp,slurp,slurp,slurp,slurp,slurp,
+            slurpcut,slurpcut,slurpcut,slurpcut,slurpcut,slurpcut,
+            water,water,water,water,water,water,water,
+            heal,
+            leapslash,leapslash,leapslash,
+            water2,water2,
+            cure2_2,cure2_2,cure2_2,cure2_2,
+            frogsquash,frogsquash,frogsquash,frogsquash,frogsquash]
+    b_ayla = [kiss,kiss,kiss,kiss,kiss,kiss,kiss,kiss,
+            rollokick,rollokick,rollokick,rollokick,rollokick,rollokick,rollokick,
+            catattack,catattack,catattack,catattack,catattack,
+            rockthrow,rockthrow,
+            charm,charm,charm,charm,charm,charm,
+            tailspin,tailspin,tailspin,tailspin,
+            dinotail,dinotail,dinotail,
+            triplekick]
+    b_magus = [lightning2_2,lightning2_2,lightning2_2,lightning2_2,lightning2_2,
+             ice2_2,ice2_2,ice2_2,ice2_2,ice2_2,
+             fire2_2,fire2_2,fire2_2,fire2_2,fire2_2,
+             darkbomb,darkbomb,darkbomb,
+             magicwall,magicwall,magicwall,magicwall,magicwall,magicwall,magicwall,
+             darkmist,darkmist,
+             blackhole,blackhole,blackhole,blackhole,blackhole,blackhole,blackhole,blackhole,
+             darkmatter]
     chars = [crono, marle, lucca, robo, frog, ayla, magus]
+    balanced_chars = [b_crono, b_marle, b_lucca, b_robo, b_frog, b_ayla, b_magus]
     for character in chars:
-        randomize_tech_order_balanced(character)
+        randomize_tech_order_balanced(character, balanced_chars[chars.index(character)])
     rewrite_menu_techs()
     rewrite_combo_techs()
     file_pointer.close()

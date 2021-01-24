@@ -8,6 +8,7 @@ import specialwriter as hardcoded_items
 import shopwriter as shops
 import characterwriter as char_slots
 import logicwriter as keyitems
+import logicwriter_chronosanity as chronosanity_logic
 import random as rand
 import ipswriter as bigpatches
 import patcher as patches
@@ -73,8 +74,11 @@ quick_pendant = ""
 locked_chars = ""
 tech_list = ""
 seed = ""
-slower_ayla = ""
 tech_list = ""
+unlocked_magic = ""
+quiet_mode = ""
+chronosanity = ""
+tab_treasures = ""
    
 #
 # Handle the command line interface for the randomizer.
@@ -93,8 +97,11 @@ def command_line():
      global locked_chars
      global tech_list
      global seed
-     global slower_ayla
      global tech_list_balanced
+     global unlocked_magic
+     global quiet_mode
+     global chronosanity
+     global tab_treasures
      flags = ""
      sourcefile = input("Please enter ROM name or drag it onto the screen.")
      sourcefile = sourcefile.strip("\"")
@@ -155,15 +162,27 @@ def command_line():
      if tech_list == "Y":
          flags = flags + "te"
          tech_list = "Fully Random"
-         tech_list_balanced = input("Do you want to balance the randomized techs(tx)? Y/N ")
+         tech_list_balanced = input("Do you want to balance the randomized techs(tex)? Y/N ")
          tech_list_balanced = tech_list_balanced.upper()
          if tech_list_balanced == "Y":
             flags = flags + "x"
             tech_list = "Balanced Random"
-     slower_ayla = input("Do you want to reduce Ayla's speed(a)? Y/N")
-     slower_ayla = slower_ayla.upper()
-     if slower_ayla == "Y":
-         flags = flags + "a"
+     unlocked_magic = input("Do you want the ability to learn all techs without visiting Spekkio(m)? Y/N")
+     unlocked_magic = unlocked_magic.upper()
+     if unlocked_magic == "Y":
+         flags = flags + "te"
+     quiet_mode = input("Do you want to enable quiet mode (No music)(q)? Y/N")
+     quiet_mode = quiet_mode.upper()
+     if quiet_mode == "Y":
+         flags = flags + "q"
+     chronosanity = input("Do you want to enable Chronosanity (key items can appear in chests)? (cr)? Y/N")
+     chronosanity = chronosanity.upper()
+     if chronosanity == "Y":
+         flags = flags + "cr"
+     tab_treasures = input("Do you want all treasures to be tabs(tb)? Y/N ")
+     tab_treasures = tab_treasures.upper()
+     if tab_treasures == "Y":
+        flags = flags + "tb"
     
 
 #
@@ -194,7 +213,10 @@ def handle_gui(datastore):
   global locked_chars
   global tech_list
   global seed
-  global slower_ayla
+  global unlocked_magic
+  global quiet_mode
+  global chronosanity
+  global tab_treasures
   
   # Get the user's chosen difficulty
   difficulty = datastore.difficulty.get()
@@ -221,7 +243,10 @@ def handle_gui(datastore):
   zeal_end = get_flag_value(datastore.flags['z'])
   quick_pendant = get_flag_value(datastore.flags['p'])
   locked_chars = get_flag_value(datastore.flags['c'])
-  slower_ayla = get_flag_value(datastore.flags['a'])
+  unlocked_magic = get_flag_value(datastore.flags['m'])
+  quiet_mode = get_flag_value(datastore.flags['q'])
+  chronosanity = get_flag_value(datastore.flags['cr'])
+  tab_treasures = get_flag_value(datastore.flags['tb'])
   
   # source ROM
   sourcefile = datastore.inputFile.get()
@@ -255,7 +280,10 @@ def generate_rom():
      global locked_chars
      global tech_list
      global seed
-     global slower_ayla
+     global unlocked_magic
+     global quiet_mode
+     global chronosanity
+     global tab_treasures
      outfile = sourcefile.split(".")
      outfile = str(outfile[0])
      if flags == "":
@@ -296,32 +324,37 @@ def generate_rom():
          pass
      elif quick_pendant == "Y":
              patches.patch_file("patches/fast_charge_pendant.txt",outfile)
+     if unlocked_magic == "Y":
+         bigpatches.write_patch("patches/fastmagic.ips",outfile)
      print("Randomizing treasures...")
-     treasures.randomize_treasures(outfile,difficulty)
-     hardcoded_items.randomize_hardcoded_items(outfile)
+     treasures.randomize_treasures(outfile,difficulty,tab_treasures)
+     hardcoded_items.randomize_hardcoded_items(outfile,tab_treasures)
      print("Randomizing enemy loot...")
      enemystuff.randomize_enemy_stuff(outfile,difficulty)
      print("Randomizing shops...")
      shops.randomize_shops(outfile)
      print("Randomizing character locations...")
-     if slower_ayla == "Y":
-         char_locs = char_slots.randomize_char_positions_a(outfile,locked_chars,lost_worlds)
-     else:
-         char_locs = char_slots.randomize_char_positions(outfile,locked_chars,lost_worlds)
+     char_locs = char_slots.randomize_char_positions(outfile,locked_chars,lost_worlds)
      print("Now placing key items...")
      if lost_worlds == "Y":
          keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
      else:
-         keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
+         if chronosanity == "Y":
+           chronosanity_logic.writeKeyItems(
+               outfile, char_locs, (locked_chars == "Y"), (quick_pendant == "Y"))
+         else:
+           keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
      if difficulty == "hard":
          bigpatches.write_patch("patches/hard.ips",outfile)
-     if boss_scaler == "Y":
+     if boss_scaler == "Y" and chronosanity != "Y":
          print("Rescaling bosses based on key items..")
          boss_scale.scale_bosses(char_locs,keyitemlist,locked_chars,outfile)
      if tech_list == "Fully Random":
          tech_order.take_pointer(outfile)
      elif tech_list == "Balanced Random":
          tech_order.take_pointer_balanced(outfile)
+     if quiet_mode == "Y":
+         bigpatches.write_patch("patches/nomusic.ips",outfile)
      # Tyrano Castle chest hack
      f = open(outfile,"r+b")
      f.seek(0x35F6D5)
@@ -331,6 +364,7 @@ def generate_rom():
      if lost_worlds == "Y":         
        f = open(outfile,"r+b")
        bigpatches.write_patch("patches/mysticmtnfix.ips",outfile)
+       bigpatches.write_patch("patches/losteot.ips",outfile)
      #Bangor Dome event fix if character locks are on
        if locked_chars == "Y":
          bigpatches.write_patch("patches/bangorfix.ips",outfile)

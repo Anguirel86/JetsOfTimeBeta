@@ -23,6 +23,7 @@ class DataStore:
 
 datastore = DataStore()
 progressBar = None
+optionsFrame = None
 
 #
 # Generate thread target function, calls out to the randomizer to
@@ -59,6 +60,79 @@ def generateHandler():
 def browseForRom():
   datastore.inputFile.set(askopenfilename())
 
+def flagClear():
+    datastore.difficulty.set("normal")
+    datastore.flags['g'].set(0)
+    datastore.flags['s'].set(0)
+    datastore.flags['d'].set(0)
+    datastore.flags['l'].set(0)
+    datastore.flags['b'].set(0)
+    datastore.flags['z'].set(0)
+    datastore.flags['p'].set(0)
+    datastore.flags['c'].set(0)
+    datastore.flags['m'].set(0)
+    datastore.flags['cr'].set(0)
+    datastore.techRando.set("Normal")
+    # Make sure all checkboxes are enabled
+    for widget in optionsFrame.winfo_children():
+      if type(widget) == tk.Checkbutton:
+        widget.configure(state="normal")
+
+def presetRace():
+    flagClear()
+    datastore.difficulty.set("normal")
+    datastore.flags['g'].set(1)
+    datastore.flags['s'].set(1)
+    datastore.flags['d'].set(1)
+    datastore.flags['z'].set(1)
+    datastore.flags['p'].set(1)
+    datastore.techRando.set("Fully Random")
+
+def presetNew():
+    flagClear()
+    datastore.difficulty.set("easy")
+    datastore.flags['g'].set(1)
+    datastore.flags['s'].set(1)
+    datastore.flags['d'].set(1)
+    datastore.flags['z'].set(1)
+    datastore.flags['p'].set(1)
+    datastore.flags['m'].set(1)
+    datastore.techRando.set("Fully Random")
+
+def presetLost():
+    flagClear()
+    datastore.difficulty.set("normal")
+    datastore.flags['g'].set(1)
+    datastore.flags['s'].set(1)
+    datastore.flags['d'].set(1)
+    datastore.flags['z'].set(1)
+    datastore.flags['l'].set(1)
+    datastore.techRando.set("Fully Random")
+
+def presetHard():
+    flagClear()
+    datastore.difficulty.set("hard")
+    datastore.flags['g'].set(1)
+    datastore.flags['s'].set(1)
+    datastore.flags['d'].set(1)
+    datastore.flags['b'].set(1)
+    datastore.flags['c'].set(1)
+    datastore.techRando.set("Balanced Random")
+
+# Frame for presets, hopefully.
+
+def getPresetsFrame(window):
+  frame = tk.Frame(window, borderwidth=1)
+  row = 0
+  #Presets Header
+  tk.Label(frame, text="Preset Selection:").grid(row=row, column=0, sticky=tk.E)
+  
+  #Preset Buttons
+  tk.Button(frame, text="Race", command=presetRace).grid(row=row, column=1)
+  tk.Button(frame, text="New Player", command=presetNew).grid(row=row, column=2)
+  tk.Button(frame, text="Lost Worlds", command=presetLost).grid(row=row, column=3)
+  tk.Button(frame, text="Hard", command=presetHard).grid(row=row, column=4)
+  return frame
   
 #
 # Populate and return the frame where the user can pick game flags.
@@ -66,6 +140,9 @@ def browseForRom():
 def getGameFlagsFrame(window):
   frame = tk.Frame(window, borderwidth = 1)
   row = 0
+  pendantCheckbox = None
+  bossScalingCheckbox = None
+  lostWorldsCheckbox = None
   
   # Dropdown for the difficulty flags
   difficultyValues = ["easy", "normal", "hard"]
@@ -99,15 +176,30 @@ def getGameFlagsFrame(window):
   row = row + 1
   
   # Lost Worlds
+
+  #
+  # Callback function to disable the early pendant charge option when 
+  # the user selects the Lost Worlds mode. Early Pendant is not avaiable
+  # in Lost Worlds mode.
+  #
+  def togglePendantState():
+    if datastore.flags['l'].get() == 1:
+      datastore.flags['p'].set(0)
+      pendantCheckbox.config(state=tk.DISABLED)
+    else:
+      pendantCheckbox.config(state=tk.NORMAL)
+  
   var = tk.IntVar()
   datastore.flags['l'] = var
-  tk.Checkbutton(frame, text="Lost Worlds(l)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  lostWorldsCheckbox = tk.Checkbutton(frame, text="Lost Worlds(l)", variable = var, command=togglePendantState)
+  lostWorldsCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
   
   # Boss scaling
   var = tk.IntVar()
   datastore.flags['b'] = var
-  tk.Checkbutton(frame, text="Boss scaling(b)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  bossScalingCheckbox = tk.Checkbutton(frame, text="Boss scaling(b)", variable = var)
+  bossScalingCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
   
   # Zeal 2 as last boss
@@ -119,13 +211,50 @@ def getGameFlagsFrame(window):
   # Early pendant charge
   var = tk.IntVar()
   datastore.flags['p'] = var
-  tk.Checkbutton(frame, text="Early Pendant Charge(p)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  pendantCheckbox= tk.Checkbutton(frame, text="Early Pendant Charge(p)", variable = var)
+  pendantCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
   
   # Locked characters
   var = tk.IntVar()
   datastore.flags['c'] = var
   tk.Checkbutton(frame, text="Locked characters(c)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
+
+  # Unlocked Magic
+  var = tk.IntVar()
+  datastore.flags['m'] = var
+  tk.Checkbutton(frame, text="Unlocked Magic(m)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
+
+  # Quiet Mode (No Music)
+  var = tk.IntVar()
+  datastore.flags['q'] = var
+  tk.Checkbutton(frame, text="Quiet Mode - No Music (q)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
+
+  # Tab Treasures
+  var = tk.IntVar()
+  datastore.flags['tb'] = var
+  tk.Checkbutton(frame, text="Make all treasures tabs(tb)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
+  
+  # Chronosanity
+  def disableChronosanityIncompatibleFlags():
+    if datastore.flags['cr'].get() == 1:
+      # Boss scaling doesn't work with full rando.
+      datastore.flags['b'].set(0)
+      datastore.flags['l'].set(0)
+      bossScalingCheckbox.config(state=tk.DISABLED)
+      lostWorldsCheckbox.config(state=tk.DISABLED)
+      pendantCheckbox.config(state=tk.NORMAL)
+    else:
+      bossScalingCheckbox.config(state=tk.NORMAL)
+      lostWorldsCheckbox.config(state=tk.NORMAL)
+      
+  var = tk.IntVar()
+  datastore.flags['cr'] = var
+  tk.Checkbutton(frame, text="Chronosanity(cr)", variable = var, command=disableChronosanityIncompatibleFlags).grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
 
   # Dropdown for the tech rando
@@ -138,12 +267,6 @@ def getGameFlagsFrame(window):
   dropdown.config(width = 20)
   label.grid(row = row, column = 0, sticky=tk.W)
   dropdown.grid(row = row, column = 1, sticky=tk.W)
-  row = row + 1
-
-  # Slower Ayla
-  var = tk.IntVar()
-  datastore.flags['a'] = var
-  tk.Checkbutton(frame, text="Slower Ayla(a)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
   
   # Let the user choose a seed (optional parameter)
@@ -172,8 +295,12 @@ def getGameFlagsFrame(window):
 # Main entry function for the GUI. Set up and launch the display.
 #  
 def guiMain():
+  global optionsFrame
   mainWindow = tk.Tk()
   mainWindow.wm_title("Jets of Time")
+
+  presetFrame = getPresetsFrame(mainWindow)
+  presetFrame.pack(expand=1, fill="both")
   
   optionsFrame = getGameFlagsFrame(mainWindow)
   optionsFrame.pack(expand=1, fill="both")
