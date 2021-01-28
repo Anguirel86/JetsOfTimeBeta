@@ -719,7 +719,7 @@ def initLocationGroups():
       .addLocation(Location("Denadoro Mts Screen 3 4",0x35F4F0))      
       .addLocation(Location("Denadoro Mts Ambush",0x35F4F4))      
       .addLocation(Location("Denadoro Mts Save Point",0x35F4F8))
-      .addLocation(BaselineLocation("Denadoro Mountain", 0x37742F, 0x377432, LootTiers.Mid))
+      .addLocation(BaselineLocation("Denadoro Mountain", 0x3773F1, 0x3773F3, LootTiers.Mid))
   )
       
   # Sealed locations
@@ -787,7 +787,7 @@ def initLocationGroups():
   (prehistoryReptiteLocations
       .addLocation(Location("Reptite Lair Reptites 1",0x35F6B8))
       .addLocation(Location("Reptite Lair Reptites 2",0x35F6BC))
-      .addLocation(BaselineLocation("Reptite Lair", 0x18FC2C, 0x18FC2F, LootTiers.MidHigh)) #Reptite Lair Key Item
+      .addLocation(BaselineLocation("Reptite Lair", 0x18FC04, 0x18FC07, LootTiers.MidHigh)) #Reptite Lair Key Item
   )
   
   # Dactyl Nest already has a character, so give it a relatively low weight compared
