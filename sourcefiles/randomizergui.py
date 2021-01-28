@@ -198,8 +198,8 @@ def getGameFlagsFrame(window):
   # Boss randomization
   var = tk.IntVar()
   datastore.flags['ro'] = var
-  bossScalingCheckbox = tk.Checkbutton(frame, text="Randomize bosses(ro)", variable = var)
-  bossScalingCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  bossRandoCheckbox = tk.Checkbutton(frame, text="Randomize bosses(ro)", variable = var)
+  bossRandoCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
 
   # Boss scaling
