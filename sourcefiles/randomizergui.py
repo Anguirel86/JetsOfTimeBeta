@@ -195,6 +195,13 @@ def getGameFlagsFrame(window):
   lostWorldsCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
   
+  # Boss randomization
+  var = tk.IntVar()
+  datastore.flags['ro'] = var
+  bossScalingCheckbox = tk.Checkbutton(frame, text="Randomize bosses(ro)", variable = var)
+  bossScalingCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
+
   # Boss scaling
   var = tk.IntVar()
   datastore.flags['b'] = var
