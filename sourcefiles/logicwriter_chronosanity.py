@@ -749,8 +749,8 @@ def initLocationGroups():
       .addLocation(EventLocation("Porre Mayor's House Sealed 2",0x1BACF7,0x1BACF9))     
       .addLocation(EventLocation("Guardia Forest 1000AD Sealed",0x3908B5,0x3908C9))     
       .addLocation(EventLocation("Guardia Castle 1000AD Sealed",0x3AEF65,0x3AEF67))     
-      .addLocation(EventLocation("Heckran's Cave Sealed 1",0x24EC5C,0x24EC5E))      
-      .addLocation(EventLocation("Heckran's Cave Sealed 2",0x24EC6E,0x24EC70))
+      .addLocation(EventLocation("Heckran's Cave Sealed 1",0x24EC29,0x24EC2B))      
+      .addLocation(EventLocation("Heckran's Cave Sealed 2",0x24EC3B,0x24EC3D))
       # These are the sealed chests in the blue pyramid.  
       # Not included since you can only get one of the two.
       #.addLocation(EventLocation("Forest Ruins 1",0x1BAB33,0x1BAB35))      
