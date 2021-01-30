@@ -576,7 +576,7 @@ def initLocationGroups():
       .addLocation(Location("Giant's Claw Caves 4",0x35F578))
       .addLocation(Location("Giant's Claw Caves 5",0x35F57C))
       .addLocation(Location("Giant's Claw Caves 6",0x35F580))
-      .addLocation(BaselineLocation("Giant's Claw", 0x1B8AEC, 0x1B8AEF, LootTiers.Mid)) #key item
+      .addLocation(BaselineLocation("Giant's Claw", 0x1B8AB8, 0x1B8ABF, LootTiers.Mid)) #key item
   )
 
   # Northern Ruins
