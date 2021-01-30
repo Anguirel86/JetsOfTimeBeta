@@ -25,7 +25,7 @@ import patcher as patch
 # Masa&Mune, Heckran
 # Slash, Flea, Golem, Twin Golem
 # Rust Tyrano, Yakra 13, Nizbel II
-spots = [0x1B38F0, 0x377824, 0x24EC85, 0x3ABF86, 0x1ED226, 0x1BEBBB, 0x38821C, 0x1B8A4C, 0x36F40B, 0x5FBBA]
+spots = [0x1B38F0, 0x377824, 0x24EC52, 0x3ABF86, 0x1ED226, 0x1BEBBB, 0x38821C, 0x1B8A4C, 0x36F40B, 0x5FBBA]
 spot_tiers = [0, 1, 1, 2, 2, 2, 2, 3, 3, 3]
 
 # krawlie_spot = [500, 12, 5, 50, 40, 150, 100, 500, 5]
@@ -47,13 +47,14 @@ spot_tiers = [0, 1, 1, 2, 2, 2, 2, 3, 3, 3]
 #yakra13_spot = [0x36F40B, 18000, 45, 18, 50, 200, 127, 3500, 2000, 40]
 #golemboss_spot = [15000, 34, 18, 50, 40, 127, 2500, 2000, 40]
 
-# Krawlie, Yakra, Golem, Masa & Mune, Nizbel, Nizbel II, Slash w/ Sword, Flea, Dalton, Dalton Plus, Heckran, Super Slash, Flea Plus, RustTyrano, Atropos XR, Yakra XIII, Golem Boss
-eligible_bosses = [0x04, 0x90, 0x95, 0x99, 0x9B, 0x9C, 0x9E, 0x9F, 0xA1, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
-boss_tiers = [0, 0, 2, 1, 2, 3, 2, 2, 2, 3, 1, 2, 2, 3, 2, 3, 2]
+# Yakra, Golem, Masa & Mune, Nizbel, Nizbel II, Slash w/ Sword, Flea, Dalton, Dalton Plus, Heckran, Super Slash, Flea Plus, RustTyrano, Atropos XR, Yakra XIII, Golem Boss
+eligible_bosses = [0x90, 0x95, 0x99, 0x9B, 0x9C, 0x9E, 0x9F, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
+boss_tiers =      [   0,    2,    1,    2,    3,    2,    2,    3,    1,    2,    2,    3,    2,    3,    2]
 
 def randomize_bosses(outfile):
-    eligible_bosses = [0x04, 0x90, 0x95, 0x99, 0x9B, 0x9C, 0x9E, 0x9F, 0xA1, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
-    boss_tiers = [0, 0, 2, 1, 2, 3, 2, 2, 2, 3, 1, 2, 2, 3, 2, 3, 2]
+    # Reset array to initial position.  Program will crash if you don't do that because we remove elements from the array as bosses are selected.
+    eligible_bosses = [0x90, 0x95, 0x99, 0x9B, 0x9C, 0x9E, 0x9F, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
+    boss_tiers =      [   0,    2,    1,    2,    3,    2,    2,    3,    1,    2,    2,    3,    2,    3,    2]
 
     f = open(outfile,"r+b")
     lnI = 0
