@@ -24,9 +24,9 @@ import patcher as patch
 # Yakra
 # Masa&Mune, Heckran
 # Slash, Flea, Golem, Twin Golem
-# Rust Tyrano, Yakra 13, Nizbel II
-spots = [0x1B38F0, 0x377824, 0x24EC52, 0x3ABF86, 0x1ED226, 0x1BEBBB, 0x38821C, 0x1B8A4C, 0x36F40B, 0x5FBBA]
-spot_tiers = [0, 1, 1, 2, 2, 2, 2, 3, 3, 3]
+# Nizbel, Rust Tyrano, Yakra 13, Nizbel II
+spots = [0x1B38F0, 0x377824, 0x24EC52, 0x3ABF86, 0x1ED226, 0x1BEBBB, 0x38821C, 0x18FC30, 0x1B8A4C, 0x36F40B, 0x5FBBA]
+spot_tiers = [0, 1, 1, 2, 2, 3, 3, 2, 2, 2, 2]
 
 # krawlie_spot = [500, 12, 5, 50, 40, 150, 100, 500, 5]
 #yakra_spot = [0x1B38C2, 920, 6, 9, 50, 16, 127, 200, 600, 5] # Changes:  50 -> 200 XP
