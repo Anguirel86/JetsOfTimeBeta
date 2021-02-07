@@ -96,7 +96,7 @@ areabomb = {"attack_byte": 0x12, "effect": 7, "tech_id": 0x1F, "efpointer": [3,0
 "descpointer": [0x20,0x3D], "mp_cost": 14, "targeting": [0x11,2]}
 shock = {"attack_byte": 0x82, "effect": 7, "tech_id": 0x20, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x28,0,0],
 "anim": [0x20,0x61,0,1,0,0,0x22], "text": [0xB2,0xC1,0xC8,0xBC,0xC4,0xEF,0xEF,0xEF,0xEF,0xEF,0xEF],
-"descpointer": [0x36,0x3D], "mp_cost": 17, "targeting": [8,0]}
+"descpointer": [0x36,0x3D], "mp_cost": 12, "targeting": [8,0]}
 slurp = {"attack_byte": 0, "effect": 0, "tech_id": 0x21, "efpointer": [0,8,0x80,0,0,0,0,0,0,0,0,0],
 "anim": [0x21,0xE1,0,0x1D,9,9,0xFF], "text": [0xB2,0xC5,0xCE,0xCB,0xC9,0xEF,0xEF,0xEF,0xEF,0xEF,0xEF],
 "descpointer": [0x51,0x3D], "mp_cost": 1, "targeting": [0x80,0]}
@@ -369,12 +369,12 @@ def rewrite_combo_techs():
     combo_tech_requirements += 3
     #Super Volt
     file_pointer.seek(combo_tech_address)
-    file_pointer.write(st.pack("B",new_ids["lightning2"]))
+    file_pointer.write(st.pack("B",new_ids["luminaire"]))
     file_pointer.seek(combo_tech_address+1)
     file_pointer.write(st.pack("B",new_ids["shock"]))
     combo_tech_address += 11
     file_pointer.seek(combo_tech_requirements)
-    file_pointer.write(st.pack("B",new_ids["lightning2"]))
+    file_pointer.write(st.pack("B",new_ids["luminaire"]))
     file_pointer.seek(combo_tech_requirements+1)
     file_pointer.write(st.pack("B",new_ids["shock"] - 24))
     combo_tech_requirements += 3
