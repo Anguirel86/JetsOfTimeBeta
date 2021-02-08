@@ -647,7 +647,7 @@ def initLocationGroups():
   
   openKeys = LocationGroup("OpenKeys", 5, lambda game: True)
   (openKeys
-      .addLocation(BaselineLocation("Zenan Bridge", 0x393C82, 0x393C84, LootTiers.Mid))
+      .addLocation(BaselineLocation("Zenan Bridge", 0x393C83, 0x393C85, LootTiers.Mid))
       .addLocation(BaselineLocation("Snail Stop", 0x380C42, 0x380C5B, LootTiers.Mid))
       .addLocation(BaselineLocation("Lazy Carpenter", 0x3966B, 0x3966D, LootTiers.Mid))
   )
