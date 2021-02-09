@@ -166,7 +166,11 @@ class Game:
     #
     # NOTE: The first entry in the character data is the character ID.
     #       Use the ID to get the correct character from the enum.
-    #
+
+    # Empty the set just in case the placement algorithm had to 
+    # backtrack and a character is no longer available.
+    self.characters.clear()
+    
     # The first four characters are always available.
     self.addCharacter(Characters(self.charLocations['start'][0]))
     self.addCharacter(Characters(self.charLocations['start2'][0]))
@@ -321,7 +325,7 @@ class EventLocation(Location):
 # EventLocation provides all of the pointers needed. 
 # This class allows for a loot tier to be specified, that 
 # will be used to assign a piece of loot to locations that
-# were nor assigned a key item.
+# were not assigned a key item.
 #
 class BaselineLocation(EventLocation):
   def __init__(self, name, pointer, pointer2, lootTier):
@@ -574,20 +578,32 @@ def initLocationGroups():
       .addLocation(Location("Giant's Claw Caves 2",0x35F570))
       .addLocation(Location("Giant's Claw Caves 3",0x35F574))
       .addLocation(Location("Giant's Claw Caves 4",0x35F578))
-      .addLocation(Location("Giant's Claw Caves 5",0x35F57C))
-      .addLocation(Location("Giant's Claw Caves 6",0x35F580))
+      #.addLocation(Location("Giant's Claw Caves Rock Chest",0x35F57C)) # Rock chest - Don't include
+      .addLocation(Location("Giant's Claw Caves 5",0x35F580))
       .addLocation(BaselineLocation("Giant's Claw", 0x1B8ABB, 0x1B8ABF, LootTiers.Mid)) #key item
   )
 
   # Northern Ruins
   northernRuinsLocations = \
-      LocationGroup("NorthernRuins", 25, \
-          lambda game:(game.canAccessRuins() and game.canAccessSealedChests()))
+      LocationGroup("NorthernRuins", 10, \
+          lambda game:(game.canAccessRuins()))
   (northernRuinsLocations
+      # regular chests in the sealed ruins
+      # Note: These aren't actually real chests, they are handled in event
+      #       code similar to how sealed chests are handled.
+      .addLocation(EventLocation("Northern Ruins Basement 600AD",0x1BAF0A, 0x1BAF0F))
+      .addLocation(EventLocation("Northern Ruins Basement 1000AD",0x1BAEF4, 0x1BAEF9))
+      .addLocation(EventLocation("Northern Ruins Upstairs 600AD",0x39313, 0x39319))
+      .addLocation(EventLocation("Northern Ruins Upstairs 1000AD",0x392FD, 0x39303))
       # Sealed chests in Northern Ruins
-      .addLocation(EventLocation("Hero's Grave 1",0x1B03CD,0x1B03D0))
-      .addLocation(EventLocation("Hero's Grave 2",0x1B0401,0x1B0404))
-      .addLocation(EventLocation("Hero's Grave 3",0x393F8,0x393FF))
+      # TODO - Sealed chests in this location are shared across time periods in such
+      #        a way that the player can end up with two copies of a key item if they 
+      #        collect it in 1000AD first, then in 600AD.  Commenting these out for
+      #        now.  Either these chests will need to be separated or removed
+      #        from the pool of key item locations.
+      #.addLocation(EventLocation("Hero's Grave 1",0x1B03CD,0x1B03D0))
+      #.addLocation(EventLocation("Hero's Grave 2",0x1B0401,0x1B0404))
+      #.addLocation(EventLocation("Hero's Grave 3",0x393F8,0x393FF))
   )
 
   # Guardia Treasury
@@ -619,7 +635,10 @@ def initLocationGroups():
   )
   
   lateOzziesFortLocations = \
-      LocationGroup("Ozzie's Fort Back", 6, lambda game: game.canAccessDarkAges())
+      LocationGroup("Ozzie's Fort Back", 6, \
+      lambda game: \
+          (game.canAccessFuture() or game.canAccessPrehistory()) and \
+          game.canAccessDarkAges())
   (lateOzziesFortLocations
       .addLocation(Location("Ozzie's Fort Final 1",0x35F564))
       .addLocation(Location("Ozzie's Fort Final 2",0x35F568))
@@ -938,7 +957,7 @@ def determineKeyItemPlacement(charlocs, lockedChars, earlyPendant):
 
 #
 # NOTE: Do not call this function directly. This will be called 
-#       by placeKeyItems after setting up the parameters
+#       by determineKeyItemPlacement after setting up the parameters
 #       needed by this function.
 #
 # This function will recursively determine key item locations
