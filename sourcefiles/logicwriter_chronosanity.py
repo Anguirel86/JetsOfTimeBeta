@@ -458,7 +458,6 @@ class LocationGroup:
     return self.locations.copy()
 # End LocationGroup class
 
-
 #
 # Initialize all of the location groups.
 #
@@ -585,14 +584,13 @@ def initLocationGroups():
 
   # Northern Ruins
   northernRuinsLocations = \
-      LocationGroup("NorthernRuins", 10, \
+      LocationGroup("NorthernRuins", 8, \
           lambda game:(game.canAccessRuins()))
   (northernRuinsLocations
       # regular chests in the sealed ruins
       # Note: These aren't actually real chests, they are handled in event
       #       code similar to how sealed chests are handled.
       .addLocation(EventLocation("Northern Ruins Basement 600AD",0x1BAF0A, 0x1BAF0F))
-      .addLocation(EventLocation("Northern Ruins Basement 1000AD",0x1BAEF4, 0x1BAEF9))
       .addLocation(EventLocation("Northern Ruins Upstairs 600AD",0x39313, 0x39319))
       .addLocation(EventLocation("Northern Ruins Upstairs 1000AD",0x392FD, 0x39303))
       # Sealed chests in Northern Ruins
@@ -604,6 +602,13 @@ def initLocationGroups():
       #.addLocation(EventLocation("Hero's Grave 1",0x1B03CD,0x1B03D0))
       #.addLocation(EventLocation("Hero's Grave 2",0x1B0401,0x1B0404))
       #.addLocation(EventLocation("Hero's Grave 3",0x393F8,0x393FF))
+  )
+  
+  northernRuinsFrogLocked = \
+      LocationGroup("NorthernRuinsFrogLocked", 1, \
+          lambda game:(game.canAccessRuins() and game.hasCharacter(Characters.Frog)))
+  (northernRuinsFrogLocked
+      .addLocation(EventLocation("Northern Ruins Basement 1000AD",0x1BAEF4, 0x1BAEF9))
   )
 
   # Guardia Treasury
@@ -743,7 +748,7 @@ def initLocationGroups():
       
   # Sealed locations
   sealedLocations = \
-      LocationGroup("SealedLocations", 30, 
+      LocationGroup("SealedLocations", 20, 
           lambda game:game.canAccessSealedChests(),
           lambda weight:int(weight * 0.3))
   (sealedLocations
@@ -760,7 +765,7 @@ def initLocationGroups():
       # Sealed chests
       .addLocation(EventLocation("Truce Inn 600AD Sealed",0x19FE7C,0x19FE83))     
       .addLocation(EventLocation("Porre Elder's House 1 Sealed",0x1B90EA,0x1B90F2))     
-      .addLocation(EventLocation("Porre Elder's House 2Sealed",0x1B9123,0x1B9126))     
+      .addLocation(EventLocation("Porre Elder's House 2 Sealed",0x1B9123,0x1B9126))     
       .addLocation(EventLocation("Guardia Castle 600AD Sealed",0x3AED24,0x3AED26))  
       .addLocation(EventLocation("Guardia Forest 600AD Sealed",0x39633B,0x39633D))      
       .addLocation(EventLocation("Truce Inn 1000AD Sealed",0xC3328,0xC332C))           
@@ -845,6 +850,7 @@ def initLocationGroups():
   locationGroups.append(fionaShrineLocations)
   locationGroups.append(giantsClawLocations)
   locationGroups.append(northernRuinsLocations)
+  locationGroups.append(northernRuinsFrogLocked)
   locationGroups.append(guardiaTreasuryLocations)
   locationGroups.append(openLocations)
   locationGroups.append(openKeys)
@@ -923,9 +929,10 @@ def getInitialKeyItems():
   keyItemList.extend([KeyItems.rubyknife, KeyItems.dreamstone, 
                       KeyItems.clone, KeyItems.ctrigger])
   
-  # remove all but 3 copies of the hilt/blade
+  # remove some copies of the hilt/blade to reduce early go mode through Magus' Castle
   keyItemList.remove(KeyItems.hilt)
   keyItemList.remove(KeyItems.hilt)
+  keyItemList.remove(KeyItems.blade)
   keyItemList.remove(KeyItems.blade)
   keyItemList.remove(KeyItems.blade)
   
@@ -936,6 +943,56 @@ def getInitialKeyItems():
   return keyItemList
 # end getInitialKeyItems
 
+#
+# Given a list of LocationGroups, get a random location.
+#
+# param: groups - List of LocationGroups
+# 
+# return: The LocationGroup the Location was chosen from
+# return: A Location randomly chosen from the groups list
+#
+def getRandomLocation(groups):
+  # get the max rand value from the combined weightings of the location groups
+  # This will be used to help select a location group
+  weightTotal = 0
+  for group in groups:
+    weightTotal = weightTotal + group.getWeight()
+  
+  # Select a location group
+  locationChoice = rand.randint(1, weightTotal)
+  counter = 0
+  chosenGroup = None
+  for group in groups:
+    counter = counter + group.getWeight()
+    if counter >= locationChoice:
+      chosenGroup = group
+      break
+    
+  # Select a random location from the chosen location group.
+  location = rand.choice(chosenGroup.getLocations())
+  
+  return chosenGroup, location
+# end getRandomLocation
+
+#
+# Given a weighted list of key items, get a shuffled
+# version of the list with only a single copy of each item.
+#
+# param: weightedList - Weighted key item list
+#
+# return: Shuffled list of key items with duplicates removed
+#
+def getShuffledKeyItemList(weightedList):
+  tempList = weightedList.copy()
+  rand.shuffle(tempList)
+  
+  keyItemList = []
+  for keyItem in tempList:
+    if not (keyItem in keyItemList):
+      keyItemList.append(keyItem)
+  
+  return keyItemList
+# end getShuffledKeyItemList
 
 #
 # Randomly place key items.
@@ -995,74 +1052,52 @@ def determineKeyItemPlacement_impl(chosenLocations, remainingKeyItems, game):
       # Continue placing key items.
       keyItemConfirmed = False
       returnedChosenLocations = None
-      location = None
-      keyItem = None
-      locationGroup = None
-      keyItemTemp = None
-      while True:
+      
+      # Choose a random location
+      locationGroup, location = getRandomLocation(availableLocations)
+      locationGroup.removeLocation(location)
+      locationGroup.decayWeight()
+      chosenLocations.append(location)
+      
+      # If 2/3 of the key items have been placed
+      # then remove the key item bias from the remaining list.
+      # This is to slightly reduce the occurrence of the lowest weighted
+      # items from showing up dispraportionately on extremely late checks
+      # like Mount Woe or the Guardia Treasury.
+      if game.getKeyItemCount() == 10:
+        newList = []
+        for key in remainingKeyItems:
+          if not key in newList:
+            newList.append(key)
+        remainingKeyItems = newList
+      
+      # Use the weighted key item list to get a list of key items
+      # that we can loop through and attempt to place.
+      localKeyItemList = getShuffledKeyItemList(remainingKeyItems)
+      for keyItem in localKeyItemList:
+        # Try placing this key item and then recurse
+        location.setKeyItem(keyItem)
+        game.addKeyItem(keyItem)
+        
+        newKeyItemList = [x for x in remainingKeyItems if x != keyItem]
+        # recurse and try to place the next key item.
+        keyItemConfirmed, returnedChosenLocations = \
+            determineKeyItemPlacement_impl(chosenLocations, newKeyItemList, game)
+        
         if keyItemConfirmed:
           # We're unwinding the recursion here, all key items are placed.
           return keyItemConfirmed, returnedChosenLocations
         else:
-          # Keep trying key item placement
-          # select a location randomly from the list
-          if locationGroup != None:
-            locationGroup.addLocation(location)
-            locationGroup.undoWeightDecay()
-            
-          # get the max rand value from the combined weightings of the location groups
-          # This will be used to help select a location group
-          weightTotal = 0
-          for group in availableLocations:
-            weightTotal = weightTotal + group.getWeight()
-          
-          # Select a location group
-          locationChoice = rand.randint(1, weightTotal)
-          counter = 0
-          for group in availableLocations:
-            counter = counter + group.getWeight()
-            if counter >= locationChoice:
-              locationGroup = group
-              break
-            
-          # Select a random location from the chosen location group.
-          # Reduce the weighting on that location group to lower the chance
-          # that it will be selected again.
-          location = rand.choice(group.getLocations())
-          group.removeLocation(location)
-          group.decayWeight()
-          chosenLocations.append(location)
-          
-          # If 2/3 of the key items have been placed
-          # then remove the key item bias from the remaining list.
-          # This is to slightly reduce the occurrence of the lowest weighted
-          # items from showing up dispraportionately on extremely late checks
-          # like Mount Woe or the Guardia Treasury.
-          if game.getKeyItemCount() == 10:
-            newList = []
-            for key in remainingKeyItems:
-              if not key in newList:
-                newList.append(key)
-            remainingKeyItems = newList
-          
-          # select a key item for this location
-          keyItem = rand.choice(remainingKeyItems)
-          # Remove all copies of the key item from the list
-          remainingKeyItems[:] = [x for x in remainingKeyItems if x != keyItem]
-          location.setKeyItem(keyItem)
-          game.addKeyItem(keyItem)
-          
-          # If this isn't the first time through the loop, choose a new item and 
-          # undo the previous item selection
-          if keyItemTemp != None:
-            remainingKeyItems.append(keyItemTemp)
-            game.removeKeyItem(keyItemTemp)
-          keyItemTemp = keyItem
-          # recurse and try to place the next key item.
-          keyItemConfirmed, returnedChosenLocations = \
-              determineKeyItemPlacement_impl(chosenLocations, remainingKeyItems, game)
+          game.removeKeyItem(keyItem)
+      # end keyItem loop
+      
+      # If we get here, we failed to place an item.  Undo location modifications
+      locationGroup.addLocation(location)
+      locationGroup.undoWeightDecay()
+      chosenLocations.remove(location)
+      
+      return False, chosenLocations
 
-              
 # end determineKeyItemPlacement_impl recursive function
 
 #
