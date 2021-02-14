@@ -50,7 +50,7 @@ boss_hp =    [920,3600,2100,4000,3800,6000,7000,5000,5000,4500,5400]
 #yakra13_spot = [0x36F40B, 4500, 17, 18, 50, 66, 127, 2200, 2000, 40]
 #golemboss_spot = [5000, 37, 37, 58, 210, 127, 2500, 2000, 40]
 
-# Yakra, Golem, Golem Twins, Masa & Mune, Nizbel, Nizbel II, Slash, Slash w/ Sword, Flea, Dalton Plus, Heckran, Super Slash, Flea Plus, RustTyrano, Atropos XR, Yakra XIII, Golem Boss
+# Yakra, Golem, Golem Twins, Masa & Mune, Nizbel, Nizbel II, Slash, Flea, Dalton Plus, Heckran, Super Slash, Flea Plus, RustTyrano, Atropos XR, Yakra XIII, Golem Boss
 eligible_bosses = [0x90, 0x95, 0x4F, 0x99, 0x9B, 0x9C, 0x9E, 0x9F, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
 boss_tiers =      [   0,    2,    3,    2,    2,    3,    1,    2,    3,    1,    2,    2,    3,    2,    3,    0]
 
@@ -62,10 +62,15 @@ def randomize_bosses(outfile):
     lnI = 0
     for spot in spots:
         if spot == 0x24EC52: #Hack to get around sprite overload in Heckran's spot
-            safe_bosses =     [0x90, 0x95, 0x4F, 0x9B, 0x9C, 0xA2, 0xA9, 0xBB, 0xBD, 0xC7, 0xF3]
-            safe_boss_tiers = [0,    2,    3,    2,    3,    3,    1,    2,    3,    3,    0]
+            safe_bosses =     [0x90, 0x95, 0x4F, 0x9B, 0x9C, 0x9E, 0xA2, 0xA9, 0xBA, 0xBD, 0xC7, 0xF3]
+            safe_boss_tiers = [0,    2,    3,    2,    3,    1,    3,    1,    2,    3,    3,    0]
             boss = rand.choice(safe_bosses)
-            boss_tier = safe_boss_tiers[safe_bosses.index(boss)]
+            boss_tier = safe_boss_tiers[safe_bosses.index(boss)]            
+        elif spot == 0x36F40B: #Similar hack for Yakra XIII's spot
+            safe_bosses =     [0x90, 0x95, 0x4F, 0x9B, 0x9C, 0x9E, 0x9F, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
+            safe_boss_tiers = [0,    2,    3,    2,    3,    1,    2,    3,    1,    2,    2,    3,    2,    3,    0]
+            boss = rand.choice(safe_bosses)
+            boss_tier = safe_boss_tiers[safe_bosses.index(boss)]            
         else:
             boss = rand.choice(eligible_bosses)
             boss_tier = boss_tiers[eligible_bosses.index(boss)]
