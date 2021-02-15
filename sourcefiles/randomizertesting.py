@@ -80,6 +80,7 @@ characters = ['Crono', 'Marle', 'Lucca', 'Frog', 'Robo', 'Ayla', 'Magus']
 char_locs = []
 quiet_mode = ""
 chronosanity = ""
+tab_treasures = ""
    
 #
 # Handle the command line interface for the randomizer.
@@ -100,7 +101,9 @@ def command_line():
      global seed
      global tech_list_balanced
      global unlocked_magic
-     global full_rando
+     global chronosanity
+     global tab_treasures
+     
      flags = ""
      sourcefile = input("Please enter ROM name or drag it onto the screen.")
      sourcefile = sourcefile.strip("\"")
@@ -178,6 +181,10 @@ def command_line():
      chronosanity = chronosanity.upper()
      if chronosanity == "Y":
          flags = flags + "cr"
+     tab_treasures = input("Do you want all treasures to be tabs(tb)? Y/N ")
+     tab_treasures = tab_treasures.upper()
+     if tab_treasures == "Y":
+        flags = flags + "tb"
 
 #
 # Given a tk IntVar, convert it to a Y/N value for use by the randomizer.
@@ -212,6 +219,7 @@ def handle_gui(datastore):
   global unlocked_magic
   global quiet_mode
   global chronosanity
+  global tab_treasures
 
   # Hopefully get the chosen character locations
   x = 0
@@ -250,6 +258,7 @@ def handle_gui(datastore):
   unlocked_magic = get_flag_value(datastore.flags['m'])
   quiet_mode = get_flag_value(datastore.flags['q'])
   chronosanity = get_flag_value(datastore.flags['cr'])
+  tab_treasures = get_flag_value(datastore.flags['tb'])
   
   # source ROM
   sourcefile = datastore.inputFile.get()
@@ -288,6 +297,8 @@ def generate_rom():
      global unlocked_magic
      global quiet_mode
      global chronosanity
+     global tab_treasures
+     
      outfile = sourcefile.split(".")
      outfile = str(outfile[0])
      if flags == "":
@@ -331,8 +342,8 @@ def generate_rom():
      if unlocked_magic == "Y":
          bigpatches.write_patch("patches/fastmagic.ips",outfile)
      print("Randomizing treasures...")
-     treasures.randomize_treasures(outfile,difficulty)
-     hardcoded_items.randomize_hardcoded_items(outfile)
+     treasures.randomize_treasures(outfile,difficulty, tab_treasures)
+     hardcoded_items.randomize_hardcoded_items(outfile, tab_treasures)
      print("Randomizing enemy loot...")
      enemystuff.randomize_enemy_stuff(outfile,difficulty)
      print("Randomizing shops...")
@@ -350,7 +361,7 @@ def generate_rom():
            keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
      if difficulty == "hard":
          bigpatches.write_patch("patches/hard.ips",outfile)
-     if boss_scaler == "Y" and full_rando != "Y":
+     if boss_scaler == "Y" and chronosanity != "Y":
          print("Rescaling bosses based on key items..")
          boss_scale.scale_bosses(char_locs,keyitemlist,locked_chars,outfile)
      if tech_list == "Fully Random":

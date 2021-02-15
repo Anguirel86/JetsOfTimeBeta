@@ -69,11 +69,14 @@ def flagClear():
     datastore.flags['s'].set(0)
     datastore.flags['d'].set(0)
     datastore.flags['l'].set(0)
+    datastore.flags['ro'].set(0)
     datastore.flags['b'].set(0)
     datastore.flags['z'].set(0)
     datastore.flags['p'].set(0)
     datastore.flags['c'].set(0)
     datastore.flags['m'].set(0)
+    datastore.flags['q'].set(0)
+    datastore.flags['tb'].set(0)
     datastore.flags['cr'].set(0)
     datastore.techRando.set("Normal")
     # Make sure all checkboxes are enabled
@@ -195,6 +198,13 @@ def getGameFlagsFrame(window):
   lostWorldsCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
   
+  # Boss randomization
+  var = tk.IntVar()
+  datastore.flags['ro'] = var
+  bossRandoCheckbox = tk.Checkbutton(frame, text="Randomize bosses(ro)", variable = var)
+  bossRandoCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
+  
   # Boss scaling
   var = tk.IntVar()
   datastore.flags['b'] = var
@@ -231,6 +241,12 @@ def getGameFlagsFrame(window):
   var = tk.IntVar()
   datastore.flags['q'] = var
   tk.Checkbutton(frame, text="Quiet Mode - No Music (q)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
+  
+  # Tab Treasures
+  var = tk.IntVar()
+  datastore.flags['tb'] = var
+  tk.Checkbutton(frame, text="Make all treasures tabs(tb)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
 
   # Chronosanity
