@@ -348,14 +348,13 @@ def generate_rom():
      print("Randomizing character locations...")
      char_locs = char_slots.randomize_char_positions(outfile,locked_chars,lost_worlds)
      print("Now placing key items...")
-     if lost_worlds == "Y":
-         keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
+     if chronosanity == "Y":
+       chronosanity_logic.writeKeyItems(
+           outfile, char_locs, (locked_chars == "Y"), (quick_pendant == "Y"), lost_worlds == "Y")
+     elif lost_worlds == "Y":
+       keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
      else:
-         if chronosanity == "Y":
-           chronosanity_logic.writeKeyItems(
-               outfile, char_locs, (locked_chars == "Y"), (quick_pendant == "Y"))
-         else:
-           keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
+       keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
      if difficulty == "hard":
          bigpatches.write_patch("patches/hard.ips",outfile)
      if boss_scaler == "Y" and chronosanity != "Y":

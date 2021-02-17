@@ -254,13 +254,9 @@ def getGameFlagsFrame(window):
     if datastore.flags['cr'].get() == 1:
       # Boss scaling doesn't work with full rando.
       datastore.flags['b'].set(0)
-      datastore.flags['l'].set(0)
       bossScalingCheckbox.config(state=tk.DISABLED)
-      lostWorldsCheckbox.config(state=tk.DISABLED)
-      pendantCheckbox.config(state=tk.NORMAL)
     else:
       bossScalingCheckbox.config(state=tk.NORMAL)
-      lostWorldsCheckbox.config(state=tk.NORMAL)
       
   var = tk.IntVar()
   datastore.flags['cr'] = var
