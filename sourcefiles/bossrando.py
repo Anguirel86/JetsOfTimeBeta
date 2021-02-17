@@ -25,8 +25,8 @@ import patcher as patch
 # Masa&Mune, Heckran
 # Slash, Flea, Golem, Twin Golem
 # Nizbel, Rust Tyrano, Yakra 13, Nizbel II
-spots = [0x1B38C2, 0x377824, 0x24EC52, 0x3ABF86, 0x1ED226, 0x1BEBBB, 0x38821C, 0x18FC30, 0x1B8A4C, 0x36F40B, 0x5FBBA]
-spot_tiers = [0, 1, 1, 2, 2, 3, 3, 2, 2, 2, 2]
+spots =      [0x1B38C2, 0x377824, 0x24EC52, 0x3ABF86, 0x1ED226, 0x1BEBBB, 0x38821C, 0x18FC30, 0x1B8A4C, 0x36F40B, 0x5FBBA]
+spot_tiers = [0,1,1,2,2,3,3,2,2,2,2]
 boss_hp =    [920,3600,2100,4000,3800,6000,7000,5000,5000,4500,5400]
 
 #Order of stats: Pointer(where applicable), HP, Level, Magic, Magic Defense, Offense, Defense, XP, GP, TP
@@ -52,23 +52,23 @@ boss_hp =    [920,3600,2100,4000,3800,6000,7000,5000,5000,4500,5400]
 
 # Yakra, Golem, Golem Twins, Masa & Mune, Nizbel, Nizbel II, Slash, Flea, Dalton Plus, Heckran, Super Slash, Flea Plus, RustTyrano, Atropos XR, Yakra XIII, Golem Boss
 eligible_bosses = [0x90, 0x95, 0x4F, 0x99, 0x9B, 0x9C, 0x9E, 0x9F, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
-boss_tiers =      [   0,    2,    3,    2,    2,    3,    1,    2,    3,    1,    2,    2,    3,    2,    3,    0]
+boss_tiers =      [   0,    3,    3,    1,    2,    2,    2,    2,    3,    1,    2,    2,    2,    1,    2,    0]
 
 def randomize_bosses(outfile):
     # Reset array to initial position.  Program will crash if you don't do that because we remove elements from the array as bosses are selected.
     eligible_bosses = [0x90, 0x95, 0x4F, 0x99, 0x9B, 0x9C, 0x9E, 0x9F, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
-    boss_tiers =      [   0,    2,    3,    2,    2,    3,    1,    2,    3,    1,    2,    2,    3,    2,    3,    0]
+    boss_tiers =      [   0,    3,    3,    1,    2,    2,    2,    2,    3,    1,    2,    2,    2,    1,    2,    0]
     f = open(outfile,"r+b")
     lnI = 0
     for spot in spots:
         if spot == 0x24EC52: #Hack to get around sprite overload in Heckran's spot
             safe_bosses =     [0x90, 0x95, 0x4F, 0x9B, 0x9C, 0x9E, 0xA2, 0xA9, 0xBA, 0xBD, 0xC7, 0xF3]
-            safe_boss_tiers = [0,    2,    3,    2,    3,    1,    3,    1,    2,    3,    3,    0]
+            safe_boss_tiers = [0,    3,    3,    2,    2,    2,    3,    1,    2,    2,    2,    0]
             boss = rand.choice(safe_bosses)
             boss_tier = safe_boss_tiers[safe_bosses.index(boss)]            
         elif spot == 0x36F40B: #Similar hack for Yakra XIII's spot
             safe_bosses =     [0x90, 0x95, 0x4F, 0x9B, 0x9C, 0x9E, 0x9F, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
-            safe_boss_tiers = [0,    2,    3,    2,    3,    1,    2,    3,    1,    2,    2,    3,    2,    3,    0]
+            safe_boss_tiers = [0,    3,    3,    2,    2,    2,    2,    3,    1,    2,    2,    2,    1,    2,    0]
             boss = rand.choice(safe_bosses)
             boss_tier = safe_boss_tiers[safe_bosses.index(boss)]            
         else:
