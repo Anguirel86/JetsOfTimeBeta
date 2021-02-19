@@ -4,17 +4,6 @@ import logictypes
 from logictypes import *
 
 #
-# Enum represenging the valid types of game logic modes
-# that can be handled by the logic factory.
-#
-class GameType(enum.Enum):
-  Normal = 0
-  LostWorlds = 1
-  Chronosanity = 2
-  ChronosanityLostWorlds = 3
-# end GameType enum class
-
-#
 # The GameConfig class holds the locations and key items associated with a game type.
 #
 class GameConfig:
@@ -365,10 +354,9 @@ class ChronosanityGameConfig(GameConfig):
       .addLocation(EventLocation("Guardia Castle 1000AD Sealed",0x3AEF65,0x3AEF67))     
       .addLocation(EventLocation("Heckran's Cave Sealed 1",0x24EC29,0x24EC2B))      
       .addLocation(EventLocation("Heckran's Cave Sealed 2",0x24EC3B,0x24EC3D))
-      # These are the sealed chests in the blue pyramid.  
-      # Not included since you can only get one of the two.
-      #.addLocation(EventLocation("Forest Ruins 1",0x1BAB33,0x1BAB35))      
-      #.addLocation(EventLocation("Forest Ruins 2",0x1BAB62,0x1BAB64)) 
+      # Since the blue pyramid only lets you get one of the two chests,
+      # set the key item to be in both of them.
+      .addLocation(DoubleEventLocation("Blue Pyramid",0x1BAB33,0x1BAB35,0x1BAB62,0x1BAB64))
     )
     
     # Sealed chest in the magic cave.

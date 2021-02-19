@@ -309,13 +309,7 @@ def writeKeyItems(outFile, charLocations, lockedChars, earlyPendant, lostWorlds)
   # Write key items to their locations in the ROM.
   romFile = open(outFile, "r+b")
   for location in chosenLocations:
-    romFile.seek(location.getPointer())
-    romFile.write(st.pack("B", location.getKeyItem().value))
-    
-    # Baseline locations have a second pointer
-    if type(location) == logictypes.EventLocation or type(location) == logictypes.BaselineLocation:
-      romFile.seek(location.getPointer2())
-      romFile.write(st.pack("B", location.getKeyItem().value))
+    location.writeKeyItem(romFile)
   
   # Go through any baseline locations not assigned an item and place a 
   # piece of treasure. Treasure quality is based on the location's loot tier.

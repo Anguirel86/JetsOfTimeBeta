@@ -1,4 +1,5 @@
 import enum
+import struct as st
 
 #
 # Enum representing various loot tiers that are used
@@ -291,6 +292,16 @@ class Location:
   #
   def getKeyItem(self):
     return self.keyItem
+  
+  #
+  # Write the key item set to this location to a provided file handle.
+  #
+  # param: fileHandle The file to write the key item to
+  #  
+  def writeKeyItem(self, fileHandle):
+    fileHandle.seek(self.getPointer())
+    fileHandle.write(st.pack("B", self.getKeyItem().value))
+  
 # End Location class
 
 #
@@ -308,6 +319,16 @@ class EventLocation(Location):
   #
   def getPointer2(self):
     return self.pointer2
+    
+  #
+  # Write the key item set to this location to a provided file handle.
+  #
+  # param: fileHandle The file to write the key item to
+  #  
+  def writeKeyItem(self, fileHandle):
+    super().writeKeyItem(fileHandle)
+    fileHandle.seek(self.getPointer2())
+    fileHandle.write(st.pack("B", self.getKeyItem().value))
     
 # End EventLocation class
 
@@ -334,7 +355,33 @@ class BaselineLocation(EventLocation):
 
 # End BaselineLocation class
 
-
+#
+# This class represents a location that holds two distinct sets
+# of event pointers.  This is used for the blue pyramid, where 
+# there are two, mutually exclusive chests.  In order to ensure 
+# that a soft lock does not occur, both chests are set to the 
+# same key item.  There are two pointers per sealed chest.
+#
+class DoubleEventLocation(EventLocation):
+  def __init__(self, name, pointer, pointer2, pointer3, pointer4):
+    EventLocation.__init__(self, name, pointer, pointer2)
+    self.pointer3 = pointer3
+    self.pointer4 = pointer4
+    
+  #
+  # Write the key item set to this location to a provided file handle.
+  #
+  # param: fileHandle The file to write the key item to
+  #  
+  def writeKeyItem(self, fileHandle):
+    super().writeKeyItem(fileHandle)
+    fileHandle.seek(self.getPointer3())
+    fileHandle.write(st.pack("B", self.getKeyItem().value))
+    fileHandle.seek(self.getPointer4())
+    fileHandle.write(st.pack("B", self.getKeyItem().value))
+    
+# end DoubleEventLocation class
+    
 #
 # This class represents a group of locations controlled by 
 # the same access rule.
