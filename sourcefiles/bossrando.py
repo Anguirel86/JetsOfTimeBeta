@@ -62,13 +62,20 @@ def randomize_bosses(outfile):
     lnI = 0
     for spot in spots:
         if spot == 0x24EC52: #Hack to get around sprite overload in Heckran's spot
-            safe_bosses =     [0x90, 0x95, 0x4F, 0x9B, 0x9C, 0x9E, 0xA2, 0xA9, 0xBA, 0xBD, 0xC7, 0xF3]
-            safe_boss_tiers = [0,    3,    3,    2,    2,    2,    3,    1,    2,    2,    2,    0]
+            safe_bosses = list(eligible_bosses)
+            safe_boss_tiers = list(boss_tiers)
+            for x in [0x99,0x9F,0xBB,0xC7]:#Masa&Mune, Flea, Flea Plus and AtroposXR cause crashes here
+                if x in safe_bosses:
+                   safe_boss_tiers.pop(safe_bosses.index(x))
+                   safe_bosses.remove(x)
             boss = rand.choice(safe_bosses)
             boss_tier = safe_boss_tiers[safe_bosses.index(boss)]            
         elif spot == 0x36F40B: #Similar hack for Yakra XIII's spot
-            safe_bosses =     [0x90, 0x95, 0x4F, 0x9B, 0x9C, 0x9E, 0x9F, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
-            safe_boss_tiers = [0,    3,    3,    2,    2,    2,    2,    3,    1,    2,    2,    2,    1,    2,    0]
+            safe_bosses =  list(eligible_bosses)
+            safe_boss_tiers = list(boss_tiers)
+            if 0x99 in safe_bosses: #Masa&Mune isn't safe to load here
+               safe_boss_tiers.pop(safe_bosses.index(0x99))
+               safe_bosses.remove(0x99)
             boss = rand.choice(safe_bosses)
             boss_tier = safe_boss_tiers[safe_bosses.index(boss)]            
         else:
