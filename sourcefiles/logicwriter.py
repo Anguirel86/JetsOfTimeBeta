@@ -201,8 +201,8 @@ def randomize_lost_worlds_keys(char_locs,outfile):
        print("Oops, ran out of attempts. Please try again!")
     else:
        ordered_keys = ["arris" ,"geno" ,"sun" ,"reptite" ,"woe"]
-       pointer1 = [0x392F4C,0x1B1844,0x1B8D95,0x18FC2C,0x381010]
-       pointer2 = [0x392F4E,0x1B1846,0x1B8D97,0x18FC2F,0x381013]
+       pointer1 = [0x392F4C,0x1B1844,0x1B8D95,0x18FC04,0x381010]
+       pointer2 = [0x392F4E,0x1B1846,0x1B8D97,0x18FC07,0x381013]
        i = 0
        while i < len(ordered_keys):
            written_key = locations[ordered_keys[i]]
