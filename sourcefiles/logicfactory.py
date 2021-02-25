@@ -4,6 +4,13 @@ import logictypes
 from logictypes import *
 
 #
+# The LogicFactory is used by the logic writer to get a GameConfig
+# object for the flags that the user selected.  The returned GameConfig
+# object holds a list of all LocationGroups, KeyItems, and a configured
+# Game object.  These are used by the logic writer to handle key item placement.
+#
+
+#
 # The GameConfig class holds the locations and key items associated with a game type.
 #
 class GameConfig:
@@ -15,28 +22,56 @@ class GameConfig:
     self.initKeyItems()
     self.initGame()
 
+  #
+  # Subclasses will override this method to 
+  # initialize LocationGroups for their specific mode.
+  #
   def initLocations(self):
     raise NotImplementedError()
 	
+  #
+  # Subclasses will override this method to
+  # initialize key items for their specific mode.
+  #
   def initKeyItems(self):
     raise NotImplementedError()
 
+  #
+  # Subclasses will override this method to
+  # configure a game object for their specific mode.
+  #
   def initGame(self):
     raise NotImplementedError()
     
+  #
+  # Get the LocationGroups associated with this game mode.
+  #
+  # return: A list of LocationGroup objects for this mode
+  #
   def getLocations(self):
     return self.locationGroups
     
+  #
+  # Get the list of key items associated with this game mode.
+  #
+  # return: A list of KeyItem objects for this mode
+  #
   def getKeyItemList(self):
     return self.keyItemList
     
+  #
+  # Get the Game object associated with this mode.
+  #
+  # return: A configured Game object for this mode
+  #
   def getGame(self):
     return self.game
 # end GameLogic class
 
 
 #
-# This class represents the game configuration for a standard Chronosanity game.
+# This class represents the game configuration for a 
+# standard Chronosanity game.
 #
 class ChronosanityGameConfig(GameConfig):
   def __init__(self, charLocations, earlyPendant, lockedChars):
@@ -356,7 +391,9 @@ class ChronosanityGameConfig(GameConfig):
       .addLocation(EventLocation("Heckran's Cave Sealed 2",0x24EC3B,0x24EC3D))
       # Since the blue pyramid only lets you get one of the two chests,
       # set the key item to be in both of them.
-      .addLocation(DoubleEventLocation("Blue Pyramid",0x1BAB33,0x1BAB35,0x1BAB62,0x1BAB64))
+      .addLocation(LinkedLocation("Blue Pyramid", \
+          EventLocation("Left Chest", 0x1BAB33,0x1BAB35), \
+          EventLocation("Right Chest", 0x1BAB62,0x1BAB64)))
     )
     
     # Sealed chest in the magic cave.
@@ -499,7 +536,8 @@ class ChronosanityGameConfig(GameConfig):
 # end ChronosanityGameConfig class
 
 #
-# This class represents the game configuration for a standard Chronosanity game.
+# This class represents the game configuration for a 
+# Lost Worlds Chronosanity game.
 #
 class ChronosanityLostWorldsGameConfig(GameConfig):
   def __init__(self, charLocations):
@@ -683,11 +721,160 @@ class ChronosanityLostWorldsGameConfig(GameConfig):
 
 # end ChronosanityLostWorldsGameConfig class
 
+#
+# This class represents the game configuration for a 
+# Normal game.
+#
+class NormalGameConfig(GameConfig):
+  def __init__(self, charLocations, earlyPendant, lockedChars):
+    self.charLocations = charLocations
+    self.earlyPendant = earlyPendant
+    self.lockedChars = lockedChars
+    GameConfig.__init__(self)
+    
+  def initGame(self):
+    self.game = Game(self.charLocations)
+    self.game.setEarlyPendant(self.earlyPendant)
+    self.game.setLockedCharacters(self.lockedChars)
+    
+  def initKeyItems(self):
+    self.keyItemList = [key for key in (KeyItems)]
+    
+                   
+  def initLocations(self): 
+    prehistoryLocations = \
+      LocationGroup("PrehistoryReptite", 1, lambda game:game.canAccessPrehistory())
+    (prehistoryLocations
+      .addLocation(BaselineLocation("Reptite Lair", 0x18FC04, 0x18FC07, LootTiers.MidHigh)) #Reptite Lair Key Item
+    )
+    
+    darkagesLocations = \
+        LocationGroup("Darkages", 1, lambda game:game.canAccessDarkAges())
+    (darkagesLocations
+        .addLocation(BaselineLocation("Mount Woe", 0x381010, 0x381013, LootTiers.High))
+    )
+  
+    openKeys = LocationGroup("OpenKeys", 5, lambda game: True, lambda weight: weight-1)
+    (openKeys
+      .addLocation(BaselineLocation("Zenan Bridge", 0x393C83, 0x393C85, LootTiers.Mid))
+      .addLocation(BaselineLocation("Snail Stop", 0x380C42, 0x380C5B, LootTiers.Mid))
+      .addLocation(BaselineLocation("Lazy Carpenter", 0x3966B, 0x3966D, LootTiers.Mid))
+      .addLocation(BaselineLocation("Taban", 0x35F888, 0x35F88A, LootTiers.Mid))
+      .addLocation(BaselineLocation("Denadoro Mountain", 0x3773F1, 0x3773F3, LootTiers.Mid))
+    )
+    
+    melchiorsRefinementslocations = \
+      LocationGroup("MelchiorRefinements", 1, lambda game:game.canAccessMelchiorsRefinements())
+    (melchiorsRefinementslocations
+      .addLocation(BaselineLocation("Melchior's Refinements", 0x3805DE, 0x3805E0, LootTiers.High))
+    )
+
+    frogsBurrowLocation = \
+      LocationGroup("FrogsBurrowLocation", 1, lambda game:game.canAccessBurrowItem())
+    (frogsBurrowLocation
+      .addLocation(BaselineLocation("Frog's Burrow Left Chest", 0x3891DE, 0x3891E0, LootTiers.MidHigh))
+    )
+    
+    guardiaTreasuryLocations = \
+      LocationGroup("GuardiaTreasury", 1, lambda game:game.canAccessKingsTrial())
+    (guardiaTreasuryLocations
+      .addLocation(BaselineLocation("King's Trial", 0x38045D, 0x38045F, LootTiers.High))
+    )
+    
+    giantsClawLocations = \
+      LocationGroup("Giantsclaw", 1, lambda game:game.canAccessGiantsClaw())
+    (giantsClawLocations
+      .addLocation(BaselineLocation("Giant's Claw", 0x1B8ABB, 0x1B8ABF, LootTiers.Mid)) #key item
+    )
+    
+    fionaShrineLocations = \
+      LocationGroup("Fionashrine", 1, lambda game:game.canAccessFionasShrine())
+    (fionaShrineLocations
+      .addLocation(BaselineLocation("Fiona's Shrine", 0x6EF5E, 0x6EF61, LootTiers.MidHigh))
+    )
+    
+    futureKeys = \
+        LocationGroup("FutureOpen", 3, lambda game:game.canAccessFuture(), lambda weight: weight-1)
+    (futureKeys   
+        .addLocation(BaselineLocation("Arris Dome Doan", 0x392F4C, 0x392F4E, LootTiers.MidHigh))
+        .addLocation(BaselineLocation("Sun Palace", 0x1B8D95, 0x1B8D97, LootTiers.MidHigh))
+        .addLocation(BaselineLocation("Geno Dome Mother Brain", 0x1B1844, 0x1B1846, LootTiers.MidHigh))
+    )
+    
+    # Prehistory
+    self.locationGroups.append(prehistoryLocations)
+    # Dark Ages
+    self.locationGroups.append(darkagesLocations)
+    # 600/1000
+    self.locationGroups.append(openKeys)
+    self.locationGroups.append(melchiorsRefinementslocations)
+    self.locationGroups.append(frogsBurrowLocation)
+    self.locationGroups.append(guardiaTreasuryLocations)
+    self.locationGroups.append(giantsClawLocations)
+    self.locationGroups.append(fionaShrineLocations)
+    # 2300
+    self.locationGroups.append(futureKeys)
+# end NormalGameConfig class
    
+#
+# This class represents the game configuration for a 
+# Lost Worlds game.
+#
+class LostWorldsGameConfig(GameConfig):
+  def __init__(self, charLocations):
+    self.charLocations = charLocations
+    GameConfig.__init__(self)
+    
+  def initGame(self):
+    self.game = Game(self.charLocations)
+    self.game.setLostWorlds(True)
+    
+  def initKeyItems(self):
+    self.keyItemList = [KeyItems.pendant, KeyItems.clone, \
+                   KeyItems.ctrigger, KeyItems.rubyknife, KeyItems.dreamstone]
+                   
+  def initLocations(self): 
+    prehistoryLocations = \
+      LocationGroup("PrehistoryReptite", 1, lambda game:True)
+    (prehistoryLocations
+      .addLocation(BaselineLocation("Reptite Lair", 0x18FC04, 0x18FC07, LootTiers.MidHigh)) #Reptite Lair Key Item
+    )
+    
+    darkagesLocations = \
+        LocationGroup("Darkages", 1, lambda game:True)
+    (darkagesLocations
+        .addLocation(BaselineLocation("Mount Woe", 0x381010, 0x381013, LootTiers.High))
+    )
+    
+    futureKeys = \
+        LocationGroup("FutureOpen", 3, lambda game:True, lambda weight: weight-1)
+    (futureKeys   
+        .addLocation(BaselineLocation("Arris Dome Doan", 0x392F4C, 0x392F4E, LootTiers.MidHigh))
+        .addLocation(BaselineLocation("Sun Palace", 0x1B8D95, 0x1B8D97, LootTiers.MidHigh))
+        .addLocation(BaselineLocation("Geno Dome Mother Brain", 0x1B1844, 0x1B1846, LootTiers.MidHigh))
+    )
+    
+    # Prehistory
+    self.locationGroups.append(prehistoryLocations)
+    # Dark Ages
+    self.locationGroups.append(darkagesLocations)
+    # 2300
+    self.locationGroups.append(futureKeys)
+
+# end LostWorldsGameCofig class    
+
 #
 # Get a GameConfig object based on randomizer flags.
 # The GameConfig object will have have the correct locations,
 # initial key items, and game setup for the selected flags.
+#
+# param: chroosanity - Whether or not the chronosanity flag is selected
+# param: lostWorlds - Whether or not the Lost Worlds flag is selected
+# param: earlyPendant - Whether or not the early pendant charge flag is selected
+# param: lockedChars - Whether or not the locked characters flag is selected
+# param: charLocations - Dictionary of character locations from characterwriter.py
+#
+# return: A GameConfig object appropriate for the given flag set
 #
 def getGameConfig(chronosanity, lostWorlds, earlyPendant, lockedChars, charLocations):
   gameConfig = None
@@ -695,9 +882,10 @@ def getGameConfig(chronosanity, lostWorlds, earlyPendant, lockedChars, charLocat
     gameConfig = ChronosanityLostWorldsGameConfig(charLocations)
   elif chronosanity:
     gameConfig = ChronosanityGameConfig(charLocations, earlyPendant, lockedChars)
+  elif lostWorlds:
+    gameConfig = LostWorldsGameConfig(charLocations)
   else:
-    print("Non-chronosanity variants not implemented.")
-    raise NotImplementedError()
+    gameConfig = NormalGameConfig(charLocations, earlyPendant, lockedChars)
   
   return gameConfig
 # end getGameConfig

@@ -2,6 +2,10 @@ import enum
 import struct as st
 
 #
+# This file holds various classes/types used by the logic placement code.
+#
+
+#
 # Enum representing various loot tiers that are used
 # for assigning treasure to unused key item checks.
 #
@@ -292,6 +296,12 @@ class Location:
   #
   def getKeyItem(self):
     return self.keyItem
+    
+  #
+  # Unset the key item from this location.
+  #
+  def unsetKeyItem(self):
+    self.keyItem = None
   
   #
   # Write the key item set to this location to a provided file handle.
@@ -352,35 +362,55 @@ class BaselineLocation(EventLocation):
   #
   def getLootTier(self):
     return self.lootTier
-
+  
+  #
+  # Write the given treasure to the provided ROM file.
+  #
+  # param: treasure - Hex code for a treasure
+  # param: fileHandle - The ROM file to write the treasure to
+  #  
+  def writeTreasure(self, treasure, fileHandle):
+    fileHandle.seek(self.getPointer())
+    fileHandle.write(st.pack("B", treasure))
+    fileHandle.seek(self.getPointer2())
+    fileHandle.write(st.pack("B", treasure))
+  
 # End BaselineLocation class
 
 #
-# This class represents a location that holds two distinct sets
-# of event pointers.  This is used for the blue pyramid, where 
-# there are two, mutually exclusive chests.  In order to ensure 
-# that a soft lock does not occur, both chests are set to the 
-# same key item.  There are two pointers per sealed chest.
+# This class represents a set of linked locations.  The key item will
+# be set in both of the locations.  This is used for the blue pyramid
+# where there are two chests, but the player can only get one.
 #
-class DoubleEventLocation(EventLocation):
-  def __init__(self, name, pointer, pointer2, pointer3, pointer4):
-    EventLocation.__init__(self, name, pointer, pointer2)
-    self.pointer3 = pointer3
-    self.pointer4 = pointer4
+class LinkedLocation(Location):
+  def __init__(self, name, location1, location2):
+    Location.__init__(self, name, 0)
+    self.location1 = location1
+    self.location2 = location2
     
   #
-  # Write the key item set to this location to a provided file handle.
+  # Set the key item for both locations in this linked location.
   #
-  # param: fileHandle The file to write the key item to
-  #  
+  def setKeyItem(self, keyItem):
+    super().setKeyItem(keyItem)
+    self.location1.setKeyItem(keyItem)
+    self.location2.setKeyItem(keyItem)
+    
+  #
+  # Unset the key item from this location.
+  #
+  def unsetKeyItem(self):
+    self.keyItem = None
+    self.location1.unsetKeyItem()
+    self.location2.unsetKeyItem()
+    
+  #
+  # Write the key item to both of the linked locations
+  #
   def writeKeyItem(self, fileHandle):
-    super().writeKeyItem(fileHandle)
-    fileHandle.seek(self.getPointer3())
-    fileHandle.write(st.pack("B", self.getKeyItem().value))
-    fileHandle.seek(self.getPointer4())
-    fileHandle.write(st.pack("B", self.getKeyItem().value))
-    
-# end DoubleEventLocation class
+    location1.writeKeyItem(fileHandle)
+    location2.writeKeyItem(fileHandle)
+# end LinkedLocation class
     
 #
 # This class represents a group of locations controlled by 

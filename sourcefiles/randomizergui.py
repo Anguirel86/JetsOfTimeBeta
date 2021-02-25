@@ -26,6 +26,65 @@ progressBar = None
 optionsFrame = None
 
 #
+# tkinter does not have a native tooltip implementation.
+# This tooltip implementation is stolen from Stack Overflow:
+# https://stackoverflow.com/a/36221216
+#
+class CreateToolTip(object):
+  """
+  create a tooltip for a given widget
+  """
+  def __init__(self, widget, text='widget info'):
+    self.waittime = 800     #miliseconds
+    self.wraplength = 300   #pixels
+    self.widget = widget
+    self.text = text
+    self.widget.bind("<Enter>", self.enter)
+    self.widget.bind("<Leave>", self.leave)
+    self.widget.bind("<ButtonPress>", self.leave)
+    self.id = None
+    self.tw = None
+
+  def enter(self, event=None):
+    self.schedule()
+
+  def leave(self, event=None):
+    self.unschedule()
+    self.hidetip()
+
+  def schedule(self):
+    self.unschedule()
+    self.id = self.widget.after(self.waittime, self.showtip)
+
+  def unschedule(self):
+    id = self.id
+    self.id = None
+    if id:
+      self.widget.after_cancel(id)
+
+  def showtip(self, event=None):
+    x = y = 0
+    x, y, cx, cy = self.widget.bbox("insert")
+    x += self.widget.winfo_rootx() + 25
+    y += self.widget.winfo_rooty() + 20
+    # creates a toplevel window
+    self.tw = tk.Toplevel(self.widget)
+    # Leaves only the label and removes the app window
+    self.tw.wm_overrideredirect(True)
+    self.tw.wm_geometry("+%d+%d" % (x, y))
+    label = tk.Label(self.tw, text=self.text, justify='left',
+                 background="#ffffff", relief='solid', borderwidth=1,
+                 wraplength = self.wraplength)
+    label.pack(ipadx=1)
+
+  def hidetip(self):
+    tw = self.tw
+    self.tw= None
+    if tw:
+      tw.destroy()
+# end class CreateToolTip
+
+#
 # Generate thread target function, calls out to the randomizer to
 # generate a seed with the datastore values and stops the progress
 # bar when the seed is ready.
@@ -157,25 +216,37 @@ def getGameFlagsFrame(window):
   dropdown.config(width = 5)
   label.grid(row = row, column = 0, sticky=tk.W)
   dropdown.grid(row = row, column = 1, sticky=tk.W)
+  CreateToolTip(dropdown, \
+      "Game difficulty:\n"
+      "Easy - Quality of treasure from chests and monster drops greatly improved.\n"
+      "Normal - Standard treasure drops, standard enemy difficulty.\n"
+      "Hard - Reduced treasure quality, some enemies have been made more difficult, "
+      "some exp and tech point rewards have been reduced.")
   row = row + 1
   
   # Checkboxes for the randomizer flags
   # Disable glitches
   var = tk.IntVar()
   datastore.flags['g'] = var
-  tk.Checkbutton(frame, text="Disable Glitches(g)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton = tk.Checkbutton(frame, text="Disable Glitches(g)", variable = var)
+  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(checkButton, "Disabled common glitches such as the unequip and save anywhere glitches.")
   row = row + 1
   
   # Faster overworld movement
   var = tk.IntVar()
   datastore.flags['s'] = var
-  tk.Checkbutton(frame, text="Fast overworld movement(s)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton = tk.Checkbutton(frame, text="Fast overworld movement(s)", variable = var)
+  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(checkButton, "Move faster on the overworld while walking and riding in the Epoch.")
   row = row + 1
   
   # faster dpad inputs in menus
   var = tk.IntVar()
   datastore.flags['d'] = var
-  tk.Checkbutton(frame, text="Fast dpad in menus(d)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton = tk.Checkbutton(frame, text="Fast dpad in menus(d)", variable = var)
+  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(checkButton, "Dpad inputs in menus are faster and more responsive.")
   row = row + 1
   
   # Lost Worlds
@@ -196,6 +267,7 @@ def getGameFlagsFrame(window):
   datastore.flags['l'] = var
   lostWorldsCheckbox = tk.Checkbutton(frame, text="Lost Worlds(l)", variable = var, command=togglePendantState)
   lostWorldsCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(lostWorldsCheckbox, "An alternate game mode where you start with access to Prehistory, the Dark Ages, and the Future. Find the clone and c.trigger to climb Death Peak and beat the Black Omen, or find the Dreamstone and Ruby Knife to make your way to Lavos through the Ocean Palace. 600AD and 1000AD are unavailable until the very end of the game.")
   row = row + 1
   
   # Boss randomization
@@ -203,6 +275,7 @@ def getGameFlagsFrame(window):
   datastore.flags['ro'] = var
   bossRandoCheckbox = tk.Checkbutton(frame, text="Randomize bosses(ro)", variable = var)
   bossRandoCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(bossRandoCheckbox, "Various dungeon bosses are shuffled and scaled.  Does not affect end game bosses.")
   row = row + 1
 
   # Boss scaling
@@ -210,12 +283,15 @@ def getGameFlagsFrame(window):
   datastore.flags['b'] = var
   bossScalingCheckbox = tk.Checkbutton(frame, text="Boss scaling(b)", variable = var)
   bossScalingCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(bossScalingCheckbox, "Bosses are scaled in difficulty based on how many key items they block.  Early bosses are unaffected.")
   row = row + 1
   
   # Zeal 2 as last boss
   var = tk.IntVar()
   datastore.flags['z'] = var
-  tk.Checkbutton(frame, text="Zeal 2 as last boss(z)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton = tk.Checkbutton(frame, text="Zeal 2 as last boss(z)", variable = var)
+  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(checkButton, "The game ends after defeating Zeal 2 when going through the Black Omen.  Lavos is still required for the Ocean Palace route.")
   row = row + 1
   
   # Early pendant charge
@@ -223,30 +299,39 @@ def getGameFlagsFrame(window):
   datastore.flags['p'] = var
   pendantCheckbox= tk.Checkbutton(frame, text="Early Pendant Charge(p)", variable = var)
   pendantCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(pendantCheckbox, "The pendant becomes charged immediately upon access to the Future, granting access to sealed doors and chests.")
   row = row + 1
   
   # Locked characters
   var = tk.IntVar()
   datastore.flags['c'] = var
-  tk.Checkbutton(frame, text="Locked characters(c)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton = tk.Checkbutton(frame, text="Locked characters(c)", variable = var)
+  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(checkButton, "The Dreamstone is required to access the character in the Dactyl Nest and power must be turned on at the Factory before the Proto Dome character can be obtained.")
   row = row + 1
 
   # Unlocked Magic
   var = tk.IntVar()
   datastore.flags['m'] = var
-  tk.Checkbutton(frame, text="Unlocked Magic(m)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton = tk.Checkbutton(frame, text="Unlocked Magic(m)", variable = var)
+  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(checkButton, "Magic is unlocked at the start of the game, no trip to Spekkio required.")
   row = row + 1
 
   # Quiet Mode (No Music)
   var = tk.IntVar()
   datastore.flags['q'] = var
-  tk.Checkbutton(frame, text="Quiet Mode - No Music (q)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton = tk.Checkbutton(frame, text="Quiet Mode - No Music (q)", variable = var)
+  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(checkButton, "Music is disabled.  Sound effects will still play.")
   row = row + 1
 
   # Tab Treasures
   var = tk.IntVar()
   datastore.flags['tb'] = var
-  tk.Checkbutton(frame, text="Make all treasures tabs(tb)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton = tk.Checkbutton(frame, text="Make all treasures tabs(tb)", variable = var)
+  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(checkButton, "All treasures chest contents are replaced with power, magic, or speed tabs.")
   row = row + 1
   
   # Chronosanity
@@ -260,7 +345,9 @@ def getGameFlagsFrame(window):
       
   var = tk.IntVar()
   datastore.flags['cr'] = var
-  tk.Checkbutton(frame, text="Chronosanity(cr)", variable = var, command=disableChronosanityIncompatibleFlags).grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton = tk.Checkbutton(frame, text="Chronosanity(cr)", variable = var, command=disableChronosanityIncompatibleFlags)
+  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  CreateToolTip(checkButton, "Key items can now show up in most treasure chests in addition to their normal locations.")
   row = row + 1
 
   # Dropdown for the tech rando
@@ -273,6 +360,10 @@ def getGameFlagsFrame(window):
   dropdown.config(width = 20)
   label.grid(row = row, column = 0, sticky=tk.W)
   dropdown.grid(row = row, column = 1, sticky=tk.W)
+  CreateToolTip(dropdown, "Determines the order in which techs are learned:\n"
+      "Normal - Vanilla tech order.\n"
+      "Balanced Random - Random tech order, but stronger techs are more likely to show up later.\n"
+      "Fully Random - Tech order is fully randomized.")
   row = row + 1
   
   # Let the user choose a seed (optional parameter)

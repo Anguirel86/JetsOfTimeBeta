@@ -97,9 +97,12 @@ def getShuffledKeyItemList(weightedList):
 #
 # Randomly place key items.
 #
-# param: charlocs - Dictionary of characer locations
-# param: lockedChars - Whether or not the locked chars flag is being used
-# param: earlyPendant - Whether or not the eary pendant charge flag is being used
+# param: gameConfig A GameConfig object with the configuration information
+#                   necessary to place keys for the selected game type
+#
+# return: A tuple containing:
+#             A Boolean indicating whether or not key item placement was successful
+#             A list of locations with key items assigned
 #
 def determineKeyItemPlacement(gameConfig):
   global locationGroups
@@ -120,14 +123,14 @@ def determineKeyItemPlacement(gameConfig):
 # such that a seed can be 100% completed.  This uses a weighted random
 # approach to placement and will only consider logically accessible locations.
 #
-# The algorithm for determining locations is:
-#   Each location group has an assigned weight.
-#   When selecting a location, get a list of all accessible locations and add up their weights.
-#   pick a random number from 1 to the combined weight
-#   Select the location group corresponding to that number
-#   Pick a location randomly from within that group
-#   Lower the weight of the selected group to reduce the chance of it being picked again
-#
+# The algorithm for determining locations - For each recursion:
+#   If there are no key items remaining, unwind the recursion, otherwise
+#     Get a list of logically accessible locations
+#     Choose a location randomly (locations are weighted)
+#     Get a shuffled list of the remaining key items
+#     Loop through the key item list, trying each one in the chosen location
+#       Recurse and try the next location/key item
+#     
 #
 # param: chosenLocations - List of locations already chosen for key items
 # param: remainingKeyItems - List of key items remaining to be placed
@@ -195,6 +198,7 @@ def determineKeyItemPlacement_impl(chosenLocations, remainingKeyItems, game):
       locationGroup.addLocation(location)
       locationGroup.undoWeightDecay()
       chosenLocations.remove(location)
+      location.unsetKeyItem()
       
       return False, chosenLocations
 
@@ -294,6 +298,7 @@ def getRandomTreasure(location):
 # param: charLocations - Dictionary of character locations from characterwriter.py
 # param: lockedChars - Whether or not the locked characters flag is selected
 # param: earlyPendant - Whether or not the early pendant charge flag is selected
+# param: lostWorlds - Whether or not the Lost Worlds flag is selected
 #
 def writeKeyItems(outFile, charLocations, lockedChars, earlyPendant, lostWorlds):
   # Get a game configuration for the provided flags
@@ -319,10 +324,7 @@ def writeKeyItems(outFile, charLocations, lockedChars, earlyPendant, lostWorlds)
         # This is a baseline location without a key item.  
         # Assign a piece of treasure.
         treasureCode = getRandomTreasure(location)
-        romFile.seek(location.getPointer())
-        romFile.write(st.pack("B", treasureCode))
-        romFile.seek(location.getPointer2())
-        romFile.write(st.pack("B", treasureCode))
+        location.writeTreasure(treasureCode, romFile)
   
   romFile.close()
   
