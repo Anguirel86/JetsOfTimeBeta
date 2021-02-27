@@ -64,7 +64,7 @@ def randomize_bosses(outfile):
         if spot == 0x24EC52: #Hack to get around sprite overload in Heckran's spot
             safe_bosses = list(eligible_bosses)
             safe_boss_tiers = list(boss_tiers)
-            for x in [0x99,0x9F,0xBB,0xC7]:#Masa&Mune, Flea, Flea Plus and AtroposXR cause crashes here
+            for x in [0x99,0x9F,0xBB,0xC7,0x9E,0xBA]:#Masa&Mune, Flea, Flea Plus, AtroposXR, Slash and Super Slash cause crashes here
                 if x in safe_bosses:
                    safe_boss_tiers.pop(safe_bosses.index(x))
                    safe_bosses.remove(x)
