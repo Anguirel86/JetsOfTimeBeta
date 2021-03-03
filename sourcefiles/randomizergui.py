@@ -20,6 +20,7 @@ class DataStore:
     self.inputFile = None
     self.outputFile = None
     self.techRando = None
+    self.shopPrices = None
 
 datastore = DataStore()
 progressBar = None
@@ -135,6 +136,7 @@ def flagClear():
     datastore.flags['tb'].set(0)
     datastore.flags['cr'].set(0)
     datastore.techRando.set("Normal")
+    datastore.shopPrices.set("Normal")
     # Make sure all checkboxes are enabled
     for widget in optionsFrame.winfo_children():
       if type(widget) == tk.Checkbutton:
@@ -230,7 +232,7 @@ def getGameFlagsFrame(window):
   datastore.flags['g'] = var
   checkButton = tk.Checkbutton(frame, text="Disable Glitches(g)", variable = var)
   checkButton.grid(row=row, sticky=tk.W, columnspan=3)
-  CreateToolTip(checkButton, "Disabled common glitches such as the unequip and save anywhere glitches.")
+  CreateToolTip(checkButton, "Disables common glitches such as the unequip and save anywhere glitches.")
   row = row + 1
   
   # Faster overworld movement
@@ -349,6 +351,24 @@ def getGameFlagsFrame(window):
   checkButton.grid(row=row, sticky=tk.W, columnspan=3)
   CreateToolTip(checkButton, "Key items can now show up in most treasure chests in addition to their normal locations.")
   row = row + 1
+  
+  # Dropdown for shop price settings
+  shopPriceValues = ["Normal", "Free", "Mostly Random", "Fully Random"]
+  label = tk.Label(frame, text="Shop Prices:")
+  var = tk.StringVar()
+  var.set('Normal')
+  datastore.shopPrices = var
+  dropdown = tk.OptionMenu(frame, var, *shopPriceValues)
+  dropdown.config(width = 20)
+  label.grid(row = row, column = 0, sticky = tk.W)
+  dropdown.grid(row = row, column = 1, sticky = tk.W)
+  CreateToolTip(dropdown, "Determines shop prices:\n"
+      "Normal - Standard randomizer shop prices\n"
+      "Free - Everything costs 1G (minimum allowed by the game)\n"
+      "Mostly Random - Random prices except for some key consumables\n"
+      "Fully Random - Random price for every item")
+  row = row + 1
+  
 
   # Dropdown for the tech rando
   techRandoValues = ["Normal", "Balanced Random", "Fully Random"]

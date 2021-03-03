@@ -81,6 +81,7 @@ quiet_mode = ""
 chronosanity = ""
 tab_treasures = ""
 boss_rando = ""
+shop_prices = ""
    
 #
 # Handle the command line interface for the randomizer.
@@ -105,6 +106,7 @@ def command_line():
      global chronosanity
      global tab_treasures
      global boss_rando
+     global shop_prices
      
      flags = ""
      sourcefile = input("Please enter ROM name or drag it onto the screen.")
@@ -191,6 +193,19 @@ def command_line():
      tab_treasures = tab_treasures.upper()
      if tab_treasures == "Y":
         flags = flags + "tb"
+     shop_prices = input("Do you want shop prices to be Normal(n), Free(f), Mostly Random(m), or Fully Random(r)?")
+     shop_prices = shop_prices.upper()
+     if shop_prices == "F":
+        shop_prices = "Free"
+        flags = flags + "spf"
+     elif shop_prices == "M":
+        shop_prices = "Mostly Random"
+        flags = flags + "spm"
+     elif shop_prices == "R":
+        shop_prices = "Fully_Random"
+        flags = flags + "spr"
+     else:
+        shop_prices = "Normal"
     
 
 #
@@ -226,12 +241,16 @@ def handle_gui(datastore):
   global chronosanity
   global tab_treasures
   global boss_rando
+  global shop_prices
   
   # Get the user's chosen difficulty
   difficulty = datastore.difficulty.get()
 
   # Get the user's chosen tech randomization
   tech_list = datastore.techRando.get()
+  
+  # Get the user's chosen shop price settings
+  shop_prices = datastore.shopPrices.get()
   
   # build the flag string from the gui datastore vars
   flags = difficulty[0]
@@ -242,6 +261,13 @@ def handle_gui(datastore):
       flags = flags + "te"
   elif tech_list == "Balanced Random":
       flags = flags + "tex"
+      
+  if shop_prices == "Free":
+    flags = flags + "spf"
+  elif shop_prices == "Mostly Random":
+    flags = flags + "spm"
+  elif shop_prices == "Fully Random":
+    flags = flags + "spr"
   
   # Set the flag variables based on what the user chose
   glitch_fixes = get_flag_value(datastore.flags['g'])
@@ -295,6 +321,7 @@ def generate_rom():
      global quiet_mode
      global chronosanity
      global tab_treasures
+     global shop_prices
      
      outfile = sourcefile.split(".")
      outfile = str(outfile[0])
@@ -345,6 +372,7 @@ def generate_rom():
      enemystuff.randomize_enemy_stuff(outfile,difficulty)
      print("Randomizing shops...")
      shops.randomize_shops(outfile)
+     shops.modify_shop_prices(outfile, shop_prices)
      print("Randomizing character locations...")
      char_locs = char_slots.randomize_char_positions(outfile,locked_chars,lost_worlds)
      print("Now placing key items...")

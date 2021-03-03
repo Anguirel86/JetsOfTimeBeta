@@ -20,6 +20,7 @@ class DataStore:
     self.inputFile = None
     self.outputFile = None
     self.techRando = None
+    self.shopPrices = None
     self.characters = ['Crono', 'Marle', 'Lucca', 'Frog', 'Robo', 'Ayla', 'Magus']
     self.charLocVars = {}
 
@@ -79,6 +80,7 @@ def flagClear():
     datastore.flags['tb'].set(0)
     datastore.flags['cr'].set(0)
     datastore.techRando.set("Normal")
+    datastore.shopPrices.set("Normal")
     # Make sure all checkboxes are enabled
     for widget in optionsFrame.winfo_children():
       if type(widget) == tk.Checkbutton:
@@ -261,6 +263,18 @@ def getGameFlagsFrame(window):
   var = tk.IntVar()
   datastore.flags['cr'] = var
   tk.Checkbutton(frame, text="Chronosanity(cr)", variable = var, command=disableChronosanityIncompatibleFlags).grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
+  
+  # Dropdown for shop price settings
+  shopPriceValues = ["Normal", "Free", "Mostly Random", "Fully Random"]
+  label = tk.Label(frame, text="Shop Prices:")
+  var = tk.StringVar()
+  var.set('Normal')
+  datastore.shopPrices = var
+  dropdown = tk.OptionMenu(frame, var, *shopPriceValues)
+  dropdown.config(width = 20)
+  label.grid(row = row, column = 0, sticky = tk.W)
+  dropdown.grid(row = row, column = 1, sticky = tk.W)
   row = row + 1
   
   # Dropdown for the tech rando
