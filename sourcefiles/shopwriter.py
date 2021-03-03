@@ -147,7 +147,7 @@ def modify_shop_prices(outfile, flag):
       if not index in exclusion_list:
         f.write(st.pack("H", getRandomPrice()))
     elif flag == "Fully Random":
-      f.write(st.pack("H", getRandomPrice))
+      f.write(st.pack("H", getRandomPrice()))
     else:
       # Free shops
       f.write(st.pack("H", 0))
