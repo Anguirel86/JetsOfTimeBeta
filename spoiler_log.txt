@@ -1,2 +1,0 @@
-{'zenan': 'jerky', 'taban': 'pendant', 'denadoro': 'blade', 'snail': 'prism', 'burrow': 'knife', 'carpenter': 'medal', 'trial': 'stone', 'melchior': 'ribbon', 'claw': 'moon', 'desert': 'masa2', 'arris': 'hilt', 'geno': 'gate', 'sun': 'trigger', 'reptite': 'pop', 'woe': 'clone'}
-{'start': 'Chrono', 'start2': 'Ayla', 'cathedral': 'Robo', 'castle': 'Magus', 'proto': 'Marle', 'burrow': 'Frog', 'dactyl': 'Lucca'}
