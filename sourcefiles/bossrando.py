@@ -26,7 +26,7 @@ import patcher as patch
 # Slash, Flea, Golem, Twin Golem
 # Nizbel, Rust Tyrano, Yakra 13, Nizbel II
 spots =      [0x1B38C2, 0x377824, 0x24EC52, 0x3ABF86, 0x1ED226, 0x1BEBBB, 0x38821C, 0x18FC30, 0x1B8A4C, 0x36F40B, 0x5FBBA]
-spot_tiers = [0,1,1,2,2,3,3,2,2,2,2]
+spot_tiers = [0,1,1,2,2,3,4,2,2,2,2]
 boss_hp =    [920,3600,2100,4000,3800,6000,7000,5000,5000,4500,5400]
 
 #Order of stats: Pointer(where applicable), HP, Level, Magic, Magic Defense, Offense, Defense, XP, GP, TP
@@ -52,12 +52,12 @@ boss_hp =    [920,3600,2100,4000,3800,6000,7000,5000,5000,4500,5400]
 
 # Yakra, Golem, Golem Twins, Masa & Mune, Nizbel, Nizbel II, Slash, Flea, Dalton Plus, Heckran, Super Slash, Flea Plus, RustTyrano, Atropos XR, Yakra XIII, Golem Boss
 eligible_bosses = [0x90, 0x95, 0x4F, 0x99, 0x9B, 0x9C, 0x9E, 0x9F, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
-boss_tiers =      [   0,    3,    3,    1,    2,    2,    2,    2,    3,    1,    2,    2,    2,    1,    2,    0]
+boss_tiers =      [   0,    3,    4,    1,    2,    2,    2,    2,    3,    1,    2,    2,    2,    1,    2,    0]
 
 def randomize_bosses(outfile):
     # Reset array to initial position.  Program will crash if you don't do that because we remove elements from the array as bosses are selected.
     eligible_bosses = [0x90, 0x95, 0x4F, 0x99, 0x9B, 0x9C, 0x9E, 0x9F, 0xA2, 0xA9, 0xBA, 0xBB, 0xBD, 0xC0, 0xC7, 0xF3]
-    boss_tiers =      [   0,    3,    3,    1,    2,    2,    2,    2,    3,    1,    2,    2,    2,    1,    2,    0]
+    boss_tiers =      [   0,    3,    4,    1,    2,    2,    2,    2,    3,    1,    2,    2,    2,    1,    2,    0]
     f = open(outfile,"r+b")
     lnI = 0
     for spot in spots:
@@ -104,7 +104,7 @@ def randomize_bosses(outfile):
         tp = int.from_bytes(f.read(1), byteorder='little', signed=False);
 
         boss_power = 1
-        if (spot_tier - boss_tier == -3):
+        if (spot_tier - boss_tier <= -3):
             boss_power = .7
         elif (spot_tier - boss_tier == -2):
             boss_power = .85
@@ -112,12 +112,14 @@ def randomize_bosses(outfile):
             boss_power = .95
         elif (spot_tier - boss_tier == 1):
             boss_power = 1.15
-        elif (spot_tier - boss_tier == 2):
+        elif (spot_tier - boss_tier >= 2):
             boss_power = 1.25
-        elif (spot_tier - boss_tier == 3):
-            boss_power = 1.45
-        
-        hp = rand.randrange(boss_hp[lnI],boss_hp[lnI] * 1.5 + 1,200)
+        #elif (spot_tier - boss_tier == 3): #Boss tier 3 is quite overpowered in practice
+        #    boss_power = 1.45
+        if boss == 0xBD:
+           hp = rand.randrange(boss_hp[lnI] * 1.5,boss_hp[lnI] * 2 + 1,200) #Rust Tyrano gets more HP to be effective
+        else:
+           hp = rand.randrange(boss_hp[lnI],boss_hp[lnI] * 1.5 + 1,200)
         level = min(int(pow(level, boss_power)), 90)
         magic = min(int(pow(magic, boss_power)), 250)
         offense = min(int(pow(offense, boss_power)), 250)
