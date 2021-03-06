@@ -408,8 +408,8 @@ class LinkedLocation(Location):
   # Write the key item to both of the linked locations
   #
   def writeKeyItem(self, fileHandle):
-    location1.writeKeyItem(fileHandle)
-    location2.writeKeyItem(fileHandle)
+    self.location1.writeKeyItem(fileHandle)
+    self.location2.writeKeyItem(fileHandle)
 # end LinkedLocation class
     
 #
