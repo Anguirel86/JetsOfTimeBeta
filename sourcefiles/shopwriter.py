@@ -101,7 +101,7 @@ def randomize_shops(outfile):
 def getRandomPrice():
   r1 = rand.uniform(0, 1)
   r2 = rand.uniform(0, 1)
-  return math.floor(abs(r1 - r2) * (1 + 65000 - 1) + 1)
+  return math.floor(abs(r1 - r2) * 65000 + 1)
    
 #
 # Modify shop prices based on the selected flags.
