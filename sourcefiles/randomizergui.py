@@ -1,9 +1,12 @@
 # python standard libraries
 import os
+import pathlib
+import pickle
 import threading
 import tkinter as tk
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askdirectory
 from tkinter import messagebox
 
 
@@ -18,9 +21,84 @@ class DataStore:
     self.flags = {}
     self.difficulty = None
     self.inputFile = None
-    self.outputFile = None
+    self.outputFolder = None
     self.techRando = None
     self.shopPrices = None
+    
+  #
+  # Get a path to the settings file.
+  # On Windows, this is in %APPDATA%\JetsOfTime
+  # On Linux/Mac this is in $HOME/.JetsOfTime
+  #
+  def getSettingsFile(self):
+    filePath = ""
+    if os.name == "nt":
+      # If on Windows, put the settings file in roaming appdata
+      dir = os.getenv('APPDATA')
+      filePath = pathlib.Path(dir).joinpath('JetsOfTime')
+    else:
+      # If on Mac/Linux, make it a hidden file in the home directory
+      filePath = pathlib.Path(os.path.expanduser('~')).joinpath('.JetsOfTime')
+      
+    return filePath.joinpath("settings.dat")
+  # end getSettingsFile method
+  
+  #
+  # Serialize and save this DataStore object.
+  #
+  def save(self):
+    try:
+      filePath = self.getSettingsFile()
+      if not filePath.parent.exists():
+        filePath.parent.mkdir()
+        
+      # We can't pickle the datastore since tkinter objects can't be pickled
+      # Set up a dictionary with the relevant data and pickle that instead
+      data = {}
+      # flags
+      flags = {}
+      for flag in self.flags:
+        flags[flag] = self.flags[flag].get()
+      data["flags"] = flags
+      # dropdowns
+      data["difficulty"] = self.difficulty.get()
+      data["shopPrices"] = self.shopPrices.get()
+      data["techRando"] = self.techRando.get()
+      # textboxes
+      data["inputFile"] = self.inputFile.get()
+      data["outputFolder"] = self.outputFolder.get()
+      
+      file = open(str(filePath), "wb")
+      pickle.dump(data, file)
+    except:
+      # Swallow any exceptions here. We don't want failures here
+      # to break the randomizer.
+      print("Unable to save settings.")
+  # end save method
+  
+  #
+  # Load a serialized DataStore object.
+  #
+  def load(self):
+    try:
+      filePath = self.getSettingsFile()
+      if filePath.exists():
+        # Load the saved settings
+        file = open(str(filePath), "rb")
+        settings = pickle.load(file)
+        
+        self.difficulty.set(settings["difficulty"])
+        self.inputFile.set(settings["inputFile"])
+        self.outputFolder.set(settings["outputFolder"])
+        self.techRando.set(settings["techRando"])
+        self.shopPrices.set(settings["shopPrices"])
+        for flag in settings["flags"]:
+          self.flags[flag].set(settings["flags"][flag])
+    except:
+      # Swallow any exceptions here. We don't want failures here
+      # to break the randomizer.
+      print("Failed to load prior settings.  Starting clean.")
+  # end load method
 
 datastore = DataStore()
 progressBar = None
@@ -93,6 +171,7 @@ class CreateToolTip(object):
 def randomize():
   try:
     randomizer.handle_gui(datastore)
+    datastore.save()
     progressBar.stop()
     tk.messagebox.showinfo("Randomization Complete", "Randomization complete. Seed: " + datastore.seed.get())
   except WindowsError:
@@ -119,22 +198,19 @@ def generateHandler():
 #
 def browseForRom():
   datastore.inputFile.set(askopenfilename())
+  
+#
+# Function to display a file chooser for the output folder.
+# Set the chosen folder to the datastore.
+# Target of the "Browse" button.
+#
+def browseForOutputFolder():
+  datastore.outputFolder.set(askdirectory())
 
 def flagClear():
     datastore.difficulty.set("normal")
-    datastore.flags['g'].set(0)
-    datastore.flags['s'].set(0)
-    datastore.flags['d'].set(0)
-    datastore.flags['l'].set(0)
-    datastore.flags['ro'].set(0)
-    datastore.flags['b'].set(0)
-    datastore.flags['z'].set(0)
-    datastore.flags['p'].set(0)
-    datastore.flags['c'].set(0)
-    datastore.flags['m'].set(0)
-    datastore.flags['q'].set(0)
-    datastore.flags['tb'].set(0)
-    datastore.flags['cr'].set(0)
+    for flagstr in datastore.flags:
+      datastore.flags[flagstr].set(0)
     datastore.techRando.set("Normal")
     datastore.shopPrices.set("Normal")
     # Make sure all checkboxes are enabled
@@ -186,7 +262,7 @@ def presetHard():
 # Frame for presets, hopefully.
 
 def getPresetsFrame(window):
-  frame = tk.Frame(window, borderwidth=1)
+  frame = tk.Frame(window, borderwidth=1, highlightbackground="black", highlightthickness=1)
   row = 0
   #Presets Header
   tk.Label(frame, text="Preset Selection:").grid(row=row, column=0, sticky=tk.E)
@@ -199,14 +275,62 @@ def getPresetsFrame(window):
   return frame
   
 #
-# Populate and return the frame where the user can pick game flags.
-#  
-def getGameFlagsFrame(window):
-  frame = tk.Frame(window, borderwidth = 1)
+# Get a frame for game options not related to randomization.
+#
+def getGameOptionsFrame(window):
+  frame = tk.Frame(window, borderwidth = 1, highlightbackground="black", highlightthickness=1)
+  row = 0
+  
+  label = tk.Label(frame, text="Game Options:")
+  label.grid(row = row, column = 0, sticky=tk.W)
+  row = row + 1
+  
+  # Disable glitches
+  var = tk.IntVar()
+  datastore.flags['g'] = var
+  checkButton = tk.Checkbutton(frame, text="Disable Glitches(g)", variable = var)
+  checkButton.grid(row=row, column=0, sticky=tk.W, columnspan=2)
+  CreateToolTip(checkButton, "Disables common glitches such as the unequip and save anywhere glitches.")
+  
+  # Faster overworld movement
+  var = tk.IntVar()
+  datastore.flags['s'] = var
+  checkButton = tk.Checkbutton(frame, text="Fast overworld movement(s)", variable = var)
+  checkButton.grid(row=row, column=2, sticky=tk.W, columnspan=2)
+  CreateToolTip(checkButton, "Move faster on the overworld while walking and riding in the Epoch.")
+  row = row + 1
+  
+  # faster dpad inputs in menus
+  var = tk.IntVar()
+  datastore.flags['d'] = var
+  checkButton = tk.Checkbutton(frame, text="Fast dpad in menus(d)", variable = var)
+  checkButton.grid(row=row, column=0, sticky=tk.W, columnspan=2)
+  CreateToolTip(checkButton, "Dpad inputs in menus are faster and more responsive.")
+  
+  # Quiet Mode (No Music)
+  var = tk.IntVar()
+  datastore.flags['q'] = var
+  checkButton = tk.Checkbutton(frame, text="Quiet Mode - No Music (q)", variable = var)
+  checkButton.grid(row=row, column=2, sticky=tk.W, columnspan=2)
+  CreateToolTip(checkButton, "Music is disabled.  Sound effects will still play.")
+  row = row + 1
+  
+  return frame
+  
+
+#
+# Get a frame for the flags that affect randomization
+#
+def getRandomizerOptionsFrame(window):
+  frame = tk.Frame(window, borderwidth = 1, highlightbackground="black", highlightthickness=1)
   row = 0
   pendantCheckbox = None
   bossScalingCheckbox = None
   lostWorldsCheckbox = None
+
+  label = tk.Label(frame, text="Randomizer Options:")
+  label.grid(row = row, column = 0, sticky=tk.W)
+  row = row + 1
   
   # Dropdown for the difficulty flags
   difficultyValues = ["easy", "normal", "hard"]
@@ -217,7 +341,7 @@ def getGameFlagsFrame(window):
   dropdown = tk.OptionMenu(frame, var, *difficultyValues)
   dropdown.config(width = 5)
   label.grid(row = row, column = 0, sticky=tk.W)
-  dropdown.grid(row = row, column = 1, sticky=tk.W)
+  dropdown.grid(row = row, column = 1, sticky=tk.W, columnspan=2)
   CreateToolTip(dropdown, \
       "Game difficulty:\n"
       "Easy - Quality of treasure from chests and monster drops greatly improved.\n"
@@ -226,33 +350,6 @@ def getGameFlagsFrame(window):
       "some exp and tech point rewards have been reduced.")
   row = row + 1
   
-  # Checkboxes for the randomizer flags
-  # Disable glitches
-  var = tk.IntVar()
-  datastore.flags['g'] = var
-  checkButton = tk.Checkbutton(frame, text="Disable Glitches(g)", variable = var)
-  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
-  CreateToolTip(checkButton, "Disables common glitches such as the unequip and save anywhere glitches.")
-  row = row + 1
-  
-  # Faster overworld movement
-  var = tk.IntVar()
-  datastore.flags['s'] = var
-  checkButton = tk.Checkbutton(frame, text="Fast overworld movement(s)", variable = var)
-  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
-  CreateToolTip(checkButton, "Move faster on the overworld while walking and riding in the Epoch.")
-  row = row + 1
-  
-  # faster dpad inputs in menus
-  var = tk.IntVar()
-  datastore.flags['d'] = var
-  checkButton = tk.Checkbutton(frame, text="Fast dpad in menus(d)", variable = var)
-  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
-  CreateToolTip(checkButton, "Dpad inputs in menus are faster and more responsive.")
-  row = row + 1
-  
-  # Lost Worlds
-
   #
   # Callback function to disable the early pendant charge option when 
   # the user selects the Lost Worlds mode. Early Pendant is not avaiable
@@ -268,15 +365,14 @@ def getGameFlagsFrame(window):
   var = tk.IntVar()
   datastore.flags['l'] = var
   lostWorldsCheckbox = tk.Checkbutton(frame, text="Lost Worlds(l)", variable = var, command=togglePendantState)
-  lostWorldsCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  lostWorldsCheckbox.grid(row=row, column=0, sticky=tk.W, columnspan=2)
   CreateToolTip(lostWorldsCheckbox, "An alternate game mode where you start with access to Prehistory, the Dark Ages, and the Future. Find the clone and c.trigger to climb Death Peak and beat the Black Omen, or find the Dreamstone and Ruby Knife to make your way to Lavos through the Ocean Palace. 600AD and 1000AD are unavailable until the very end of the game.")
-  row = row + 1
   
   # Boss randomization
   var = tk.IntVar()
   datastore.flags['ro'] = var
   bossRandoCheckbox = tk.Checkbutton(frame, text="Randomize bosses(ro)", variable = var)
-  bossRandoCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  bossRandoCheckbox.grid(row=row, column=2, sticky=tk.W, columnspan=2)
   CreateToolTip(bossRandoCheckbox, "Various dungeon bosses are shuffled and scaled.  Does not affect end game bosses.")
   row = row + 1
 
@@ -284,15 +380,14 @@ def getGameFlagsFrame(window):
   var = tk.IntVar()
   datastore.flags['b'] = var
   bossScalingCheckbox = tk.Checkbutton(frame, text="Boss scaling(b)", variable = var)
-  bossScalingCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  bossScalingCheckbox.grid(row=row, column=0, sticky=tk.W, columnspan=2)
   CreateToolTip(bossScalingCheckbox, "Bosses are scaled in difficulty based on how many key items they block.  Early bosses are unaffected.")
-  row = row + 1
   
   # Zeal 2 as last boss
   var = tk.IntVar()
   datastore.flags['z'] = var
   checkButton = tk.Checkbutton(frame, text="Zeal 2 as last boss(z)", variable = var)
-  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton.grid(row=row, column=2, sticky=tk.W, columnspan=2)
   CreateToolTip(checkButton, "The game ends after defeating Zeal 2 when going through the Black Omen.  Lavos is still required for the Ocean Palace route.")
   row = row + 1
   
@@ -300,15 +395,14 @@ def getGameFlagsFrame(window):
   var = tk.IntVar()
   datastore.flags['p'] = var
   pendantCheckbox= tk.Checkbutton(frame, text="Early Pendant Charge(p)", variable = var)
-  pendantCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  pendantCheckbox.grid(row=row, column=0, sticky=tk.W, columnspan=2)
   CreateToolTip(pendantCheckbox, "The pendant becomes charged immediately upon access to the Future, granting access to sealed doors and chests.")
-  row = row + 1
   
   # Locked characters
   var = tk.IntVar()
   datastore.flags['c'] = var
   checkButton = tk.Checkbutton(frame, text="Locked characters(c)", variable = var)
-  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton.grid(row=row, column=2, sticky=tk.W, columnspan=2)
   CreateToolTip(checkButton, "The Dreamstone is required to access the character in the Dactyl Nest and power must be turned on at the Factory before the Proto Dome character can be obtained.")
   row = row + 1
 
@@ -316,23 +410,14 @@ def getGameFlagsFrame(window):
   var = tk.IntVar()
   datastore.flags['m'] = var
   checkButton = tk.Checkbutton(frame, text="Unlocked Magic(m)", variable = var)
-  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton.grid(row=row, column=0, sticky=tk.W, columnspan=2)
   CreateToolTip(checkButton, "Magic is unlocked at the start of the game, no trip to Spekkio required.")
-  row = row + 1
-
-  # Quiet Mode (No Music)
-  var = tk.IntVar()
-  datastore.flags['q'] = var
-  checkButton = tk.Checkbutton(frame, text="Quiet Mode - No Music (q)", variable = var)
-  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
-  CreateToolTip(checkButton, "Music is disabled.  Sound effects will still play.")
-  row = row + 1
-
+  
   # Tab Treasures
   var = tk.IntVar()
   datastore.flags['tb'] = var
   checkButton = tk.Checkbutton(frame, text="Make all treasures tabs(tb)", variable = var)
-  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton.grid(row=row, column=2, sticky=tk.W, columnspan=3)
   CreateToolTip(checkButton, "All treasures chest contents are replaced with power, magic, or speed tabs.")
   row = row + 1
   
@@ -348,7 +433,7 @@ def getGameFlagsFrame(window):
   var = tk.IntVar()
   datastore.flags['cr'] = var
   checkButton = tk.Checkbutton(frame, text="Chronosanity(cr)", variable = var, command=disableChronosanityIncompatibleFlags)
-  checkButton.grid(row=row, sticky=tk.W, columnspan=3)
+  checkButton.grid(row=row, sticky=tk.W, columnspan=2)
   CreateToolTip(checkButton, "Key items can now show up in most treasure chests in addition to their normal locations.")
   row = row + 1
   
@@ -361,7 +446,7 @@ def getGameFlagsFrame(window):
   dropdown = tk.OptionMenu(frame, var, *shopPriceValues)
   dropdown.config(width = 20)
   label.grid(row = row, column = 0, sticky = tk.W)
-  dropdown.grid(row = row, column = 1, sticky = tk.W)
+  dropdown.grid(row = row, column = 1, sticky = tk.W, columnspan=2)
   CreateToolTip(dropdown, "Determines shop prices:\n"
       "Normal - Standard randomizer shop prices\n"
       "Free - Everything costs 1G (minimum allowed by the game)\n"
@@ -379,34 +464,58 @@ def getGameFlagsFrame(window):
   dropdown = tk.OptionMenu(frame, var, *techRandoValues)
   dropdown.config(width = 20)
   label.grid(row = row, column = 0, sticky=tk.W)
-  dropdown.grid(row = row, column = 1, sticky=tk.W)
+  dropdown.grid(row = row, column = 1, sticky=tk.W, columnspan=2)
   CreateToolTip(dropdown, "Determines the order in which techs are learned:\n"
       "Normal - Vanilla tech order.\n"
       "Balanced Random - Random tech order, but stronger techs are more likely to show up later.\n"
       "Fully Random - Tech order is fully randomized.")
   row = row + 1
   
+  return frame
+  
+#
+# Get the frame with the generate button and ROM selection
+#
+def getGenerateFrame(window):
+  frame = tk.Frame(window, borderwidth = 1, highlightbackground="black", highlightthickness=1)
+  frame.columnconfigure(4, weight=1)
+  row = 0
+  
   # Let the user choose a seed (optional parameter)
-  tk.Label(frame, text="Seed(optional):").grid(row=row, column=0, sticky=tk.E)
+  label = tk.Label(frame, text="Seed(optional):")
+  label.grid(row=row, column=0, sticky=tk.W+tk.E)
   datastore.seed = tk.StringVar()
-  tk.Entry(frame, textvariable=datastore.seed).grid(row=row, column=1)
+  tk.Entry(frame, textvariable=datastore.seed).grid(row=row, column=1, columnspan=3)
+  CreateToolTip(label, "Enter a seed for the randomizer.  Games generated with the same seed and flags will be identical every time.  This field is optional and a seed will be randomly selected if none is provided.")
   row = row + 1
   
   # Let the user select the base ROM to copy and patch
-  tk.Label(frame, text="Input ROM:").grid(row=row, column=0, sticky=tk.E)
+  label = tk.Label(frame, text="Input ROM:")
+  label.grid(row=row, column=0, sticky=tk.W+tk.E)
   datastore.inputFile = tk.StringVar()
-  tk.Entry(frame, textvariable=datastore.inputFile).grid(row=row, column=1)
-  tk.Button(frame, text="Browse", command=browseForRom).grid(row=row, column=2)
+  tk.Entry(frame, textvariable=datastore.inputFile).grid(row=row, column=1, columnspan=3)
+  tk.Button(frame, text="Browse", command=browseForRom).grid(row=row, column=4, sticky=tk.W)
+  CreateToolTip(label, "The vanilla Chrono Trigger ROM used to generate a randomized game.")
+  row = row + 1
+  
+  # Let the user select the base ROM to copy and patch
+  label = tk.Label(frame, text="Output Folder:")
+  label.grid(row=row, column=0, sticky=tk.W+tk.E)
+  datastore.outputFolder = tk.StringVar()
+  tk.Entry(frame, textvariable=datastore.outputFolder).grid(row=row, column=1, columnspan=3)
+  tk.Button(frame, text="Browse", command=browseForOutputFolder).grid(row=row, column=4, sticky=tk.W)
+  CreateToolTip(label, "The output location of the randomized ROM.  Defaults to the input ROM location if left blank.")
   row = row + 1
 
   # Add a progress bar to the GUI for ROM generation
   global progressBar
   progressBar = ttk.Progressbar(frame, orient='horizontal', mode='indeterminate')
-  progressBar.grid(row = row, column = 0, columnspan = 3, sticky=tk.N+tk.S+tk.E+tk.W)
+  progressBar.grid(row = row, column = 0, columnspan = 5, sticky=tk.E+tk.W)
   row = row + 1
   
-  return frame
+  tk.Button(frame, text="Generate", command=generateHandler).grid(row=row, column=2, sticky=tk.W, columnspan=2)
   
+  return frame
 
 #
 # Main entry function for the GUI. Set up and launch the display.
@@ -419,10 +528,13 @@ def guiMain():
   presetFrame = getPresetsFrame(mainWindow)
   presetFrame.pack(expand=1, fill="both")
   
-  optionsFrame = getGameFlagsFrame(mainWindow)
+  getGameOptionsFrame(mainWindow).pack(expand=1, fill="both")
+  
+  optionsFrame = getRandomizerOptionsFrame(mainWindow)
   optionsFrame.pack(expand=1, fill="both")
   
-  tk.Button(mainWindow, text="Generate", command=generateHandler).pack()
-  
+  getGenerateFrame(mainWindow).pack(expand=1, fill="both")
+  datastore.load()
+    
   mainWindow.mainloop()
   

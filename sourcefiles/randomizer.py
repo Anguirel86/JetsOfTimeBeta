@@ -3,6 +3,7 @@ import struct as st
 from os import stat
 from time import time
 import sys
+import pathlib
 import treasurewriter as treasures
 import specialwriter as hardcoded_items
 import shopwriter as shops
@@ -64,6 +65,7 @@ def read_names():
 # Script variables
 flags = ""
 sourcefile = ""
+outputfolder = ""
 difficulty = ""
 glitch_fixes = ""
 fast_move = ""
@@ -89,6 +91,7 @@ shop_prices = ""
 def command_line():
      global flags
      global sourcefile
+     global outputfolder
      global difficulty
      global glitch_fixes
      global fast_move
@@ -115,6 +118,7 @@ def command_line():
          if sourcefile.find(".smc") == - 1:
              input("Invalid File Name. Try placing the ROM in the same folder as the randomizer. Also, try writing the extension(.sfc/smc).")
              exit()
+     outputfolder = os.path.dirname(sourcefile)
      seed = input("Enter seed(or leave blank if you want to randomly generate one).")
      if seed is None or seed == "":
         names = read_names()
@@ -225,6 +229,7 @@ def get_flag_value(flag_var):
 def handle_gui(datastore):
   global flags
   global sourcefile
+  global outputfolder
   global difficulty
   global glitch_fixes
   global fast_move
@@ -287,6 +292,9 @@ def handle_gui(datastore):
   # source ROM
   sourcefile = datastore.inputFile.get()
   
+  # output folder
+  outputfolder = datastore.outputFolder.get()
+  
   # seed
   seed = datastore.seed.get()
   if seed is None or seed == "":
@@ -305,6 +313,7 @@ def handle_gui(datastore):
 def generate_rom():
      global flags
      global sourcefile
+     global outputfolder
      global difficulty
      global glitch_fixes
      global fast_move
@@ -323,12 +332,25 @@ def generate_rom():
      global tab_treasures
      global shop_prices
      
-     outfile = sourcefile.split(".")
+     # isolate the ROM file name
+     inputPath = pathlib.Path(sourcefile)
+     outfile = inputPath.name
+     
+     # Create the output file name
+     outfile = outfile.split(".")
      outfile = str(outfile[0])
      if flags == "":
        outfile = "%s.%s.sfc"%(outfile,seed)
      else:
        outfile = "%s.%s.%s.sfc"%(outfile,flags,seed)
+       
+     # Append the output file name to the selected directory
+     # If there is no selected directory, use the input path
+     if outputfolder == None or outputfolder == "":
+       outfile = str(inputPath.parent.joinpath(outfile))
+     else:
+       outfile = str(pathlib.Path(outputfolder).joinpath(outfile))
+       
      size = stat(sourcefile).st_size
      if size % 0x400 == 0:
         copyfile(sourcefile, outfile)
