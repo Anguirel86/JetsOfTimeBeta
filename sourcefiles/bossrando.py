@@ -123,8 +123,8 @@ def randomize_bosses(outfile):
         level = min(int(pow(level, boss_power)), 90)
         magic = min(int(pow(magic, boss_power)), 250)
         offense = min(int(pow(offense, boss_power)), 250)
-        xp = min(int(pow(xp, boss_power - 0.10)), 65000) #XP and gold scale up way too fast
-        gp = min(int(pow(gp, boss_power - 0.10)), 65000)
+        xp = min(int(pow(xp, boss_power)), 7000) #XP and gold scale up way too fast
+        gp = min(int(pow(gp, boss_power)), 12000)
         tp = min(int(pow(tp, boss_power)), 250)
 
         f.seek(spot)
