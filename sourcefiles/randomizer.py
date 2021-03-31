@@ -412,7 +412,7 @@ def generate_rom():
          boss_scale.scale_bosses(char_locs,keyitemlist,locked_chars,outfile)
      #print("Boss rando: " + boss_rando)
      if boss_rando == "Y":
-         boss_shuffler.randomize_bosses(outfile)
+         boss_shuffler.randomize_bosses(outfile,difficulty)
      if tech_list == "Fully Random":
          tech_order.take_pointer(outfile)
      elif tech_list == "Balanced Random":

@@ -395,7 +395,7 @@ def generate_rom():
          print("Rescaling bosses based on key items..")
          boss_scale.scale_bosses(char_locs,keyitemlist,locked_chars,outfile)
      if boss_rando == "Y":
-         boss_shuffler.randomize_bosses(outfile)
+         boss_shuffler.randomize_bosses(outfile,difficulty)
      if tech_list == "Fully Random":
          tech_order.take_pointer(outfile)
      elif tech_list == "Balanced Random":
