@@ -19,47 +19,11 @@ import bossscaler as boss_scale
 import techwriter as tech_order
 import randomizergui as gui
 
-def tenthousands_digit(digit):
-    digit = st.unpack(">B",digit)
-    digit = int(digit[0]) * 0x10000
-    return digit       
-def make_number(digit,digit2):
-       digit2 = st.unpack(">H",digit2)
-       digit2 = int(digit2[0])
-       number = digit + digit2
-#       print "{:X}".format(number)
-       return number
-def get_length(length):
-       length = st.unpack(">H",length)
-       length = int(length[0])
-       return length
-def write_data(length,pointer,position):
-        bRepeatable = False
-        if length == 0:
-            length = p.read(2)
-            length = get_length(length)
-            data = get_data()            
-            position += 3
-            bRepeatable = True
-        while length > 0:
-          if not bRepeatable:
-            data = get_data()
-            position += 1
-          f.seek(pointer)
-          f.write(st.pack("B",data))
-          pointer += 1
-          length -= 1
-        return position
-def get_data():
-        data = p.read(1)
-        data = st.unpack("B",data)
-        data = int(data[0])
-        return data
 def read_names():
         p = open("names.txt","r")
         names = p.readline()
         names = names.split(",")
-        p.close
+        p.close()
         return names
 
 # Script variables
@@ -306,7 +270,6 @@ def handle_gui(datastore):
   # GUI values have been converted, generate the ROM.
   generate_rom()
    
-   
 #
 # Generate the randomized ROM.
 #    
@@ -387,6 +350,8 @@ def generate_rom():
              patches.patch_file("patches/fast_charge_pendant.txt",outfile)
      if unlocked_magic == "Y":
          bigpatches.write_patch("patches/fastmagic.ips",outfile)
+     if difficulty == "hard":
+         bigpatches.write_patch("patches/hard.ips",outfile)
      print("Randomizing treasures...")
      treasures.randomize_treasures(outfile,difficulty,tab_treasures)
      hardcoded_items.randomize_hardcoded_items(outfile,tab_treasures)
@@ -405,8 +370,6 @@ def generate_rom():
        keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
      else:
        keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
-     if difficulty == "hard":
-         bigpatches.write_patch("patches/hard.ips",outfile)
      if boss_scaler == "Y" and chronosanity != "Y":
          print("Rescaling bosses based on key items..")
          boss_scale.scale_bosses(char_locs,keyitemlist,locked_chars,outfile)
@@ -434,8 +397,7 @@ def generate_rom():
          bigpatches.write_patch("patches/bangorfix.ips",outfile)
        f.close()
      print("Randomization completed successfully.")
-     
-     
+
      
 if __name__ == "__main__":
   if len(sys.argv) > 1 and sys.argv[1] == "-c":

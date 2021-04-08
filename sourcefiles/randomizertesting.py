@@ -58,7 +58,7 @@ def read_names():
         p = open("names.txt","r")
         names = p.readline()
         names = names.split(",")
-        p.close
+        p.close()
         return names
 
 # Script variables
@@ -371,6 +371,8 @@ def generate_rom():
              patches.patch_file("patches/fast_charge_pendant.txt",outfile)
      if unlocked_magic == "Y":
          bigpatches.write_patch("patches/fastmagic.ips",outfile)
+     if difficulty == "hard":
+         bigpatches.write_patch("patches/hard.ips",outfile)
      print("Randomizing treasures...")
      treasures.randomize_treasures(outfile,difficulty, tab_treasures)
      hardcoded_items.randomize_hardcoded_items(outfile, tab_treasures)
@@ -389,8 +391,6 @@ def generate_rom():
        keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
      else:
        keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
-     if difficulty == "hard":
-         bigpatches.write_patch("patches/hard.ips",outfile)
      if boss_scaler == "Y" and chronosanity != "Y":
          print("Rescaling bosses based on key items..")
          boss_scale.scale_bosses(char_locs,keyitemlist,locked_chars,outfile)

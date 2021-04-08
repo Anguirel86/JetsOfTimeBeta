@@ -140,7 +140,7 @@ def randomize_char_positions(outfile,locked_chars,lost_worlds):
         set_stats(f,chosen_char,location,lost_worlds)
         characters.remove(chosen_char)
     write_chars(f,character_locations,locked_chars,lost_worlds,outfile)
-    f.close
+    f.close()
     return character_locations
 
 if __name__ == "__main__":

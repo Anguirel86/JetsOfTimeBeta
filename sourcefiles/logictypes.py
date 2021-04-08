@@ -55,6 +55,7 @@ class Characters(enum.Enum):
 # as the randomizer places key items.  It:
 #   - Tracks key items obtained
 #   - Tracks characters obtained
+#   - Keeps track of user selected flags
 #   - Provides logic convenience functions
 #  
 class Game:
@@ -185,7 +186,7 @@ class Game:
     
   #
   # Logic convenience functions.  These can be used to
-  # quickly check if particular eras or chests are
+  # quickly check if particular eras or locations are
   # logically accessible.
   #
   def canAccessDactylCharacter(self):
@@ -380,7 +381,7 @@ class BaselineLocation(EventLocation):
 #
 # This class represents a set of linked locations.  The key item will
 # be set in both of the locations.  This is used for the blue pyramid
-# where there are two chests, but the player can only get one.
+# where there are two chests but the player can only get one.
 #
 class LinkedLocation(Location):
   def __init__(self, name, location1, location2):

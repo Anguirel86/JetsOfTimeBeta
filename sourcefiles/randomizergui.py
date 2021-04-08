@@ -174,7 +174,8 @@ def randomize():
     datastore.save()
     progressBar.stop()
     tk.messagebox.showinfo("Randomization Complete", "Randomization complete. Seed: " + datastore.seed.get())
-  except WindowsError:
+  except WindowsError as we:
+    print(str(we))
     tk.messagebox.showinfo("Invalid File Name", f"Try placing the ROM in the same folder as the program. \n Also, try writing the extension(.sfc/smc).")
     progressBar.stop()
 
@@ -288,14 +289,14 @@ def getGameOptionsFrame(window):
   # Disable glitches
   var = tk.IntVar()
   datastore.flags['g'] = var
-  checkButton = tk.Checkbutton(frame, text="Disable Glitches(g)", variable = var)
+  checkButton = tk.Checkbutton(frame, text="Disable Glitches (g)", variable = var)
   checkButton.grid(row=row, column=0, sticky=tk.W, columnspan=2)
   CreateToolTip(checkButton, "Disables common glitches such as the unequip and save anywhere glitches.")
   
   # Faster overworld movement
   var = tk.IntVar()
   datastore.flags['s'] = var
-  checkButton = tk.Checkbutton(frame, text="Fast overworld movement(s)", variable = var)
+  checkButton = tk.Checkbutton(frame, text="Fast overworld movement (s)", variable = var)
   checkButton.grid(row=row, column=2, sticky=tk.W, columnspan=2)
   CreateToolTip(checkButton, "Move faster on the overworld while walking and riding in the Epoch.")
   row = row + 1
@@ -303,7 +304,7 @@ def getGameOptionsFrame(window):
   # faster dpad inputs in menus
   var = tk.IntVar()
   datastore.flags['d'] = var
-  checkButton = tk.Checkbutton(frame, text="Fast dpad in menus(d)", variable = var)
+  checkButton = tk.Checkbutton(frame, text="Fast dpad in menus (d)", variable = var)
   checkButton.grid(row=row, column=0, sticky=tk.W, columnspan=2)
   CreateToolTip(checkButton, "Dpad inputs in menus are faster and more responsive.")
   
@@ -364,14 +365,14 @@ def getRandomizerOptionsFrame(window):
   
   var = tk.IntVar()
   datastore.flags['l'] = var
-  lostWorldsCheckbox = tk.Checkbutton(frame, text="Lost Worlds(l)", variable = var, command=togglePendantState)
+  lostWorldsCheckbox = tk.Checkbutton(frame, text="Lost Worlds (l)", variable = var, command=togglePendantState)
   lostWorldsCheckbox.grid(row=row, column=0, sticky=tk.W, columnspan=2)
   CreateToolTip(lostWorldsCheckbox, "An alternate game mode where you start with access to Prehistory, the Dark Ages, and the Future. Find the clone and c.trigger to climb Death Peak and beat the Black Omen, or find the Dreamstone and Ruby Knife to make your way to Lavos through the Ocean Palace. 600AD and 1000AD are unavailable until the very end of the game.")
   
   # Boss randomization
   var = tk.IntVar()
   datastore.flags['ro'] = var
-  bossRandoCheckbox = tk.Checkbutton(frame, text="Randomize bosses(ro)", variable = var)
+  bossRandoCheckbox = tk.Checkbutton(frame, text="Randomize bosses (ro)", variable = var)
   bossRandoCheckbox.grid(row=row, column=2, sticky=tk.W, columnspan=2)
   CreateToolTip(bossRandoCheckbox, "Various dungeon bosses are shuffled and scaled.  Does not affect end game bosses.")
   row = row + 1
@@ -379,14 +380,14 @@ def getRandomizerOptionsFrame(window):
   # Boss scaling
   var = tk.IntVar()
   datastore.flags['b'] = var
-  bossScalingCheckbox = tk.Checkbutton(frame, text="Boss scaling(b)", variable = var)
+  bossScalingCheckbox = tk.Checkbutton(frame, text="Boss scaling (b)", variable = var)
   bossScalingCheckbox.grid(row=row, column=0, sticky=tk.W, columnspan=2)
   CreateToolTip(bossScalingCheckbox, "Bosses are scaled in difficulty based on how many key items they block.  Early bosses are unaffected.")
   
   # Zeal 2 as last boss
   var = tk.IntVar()
   datastore.flags['z'] = var
-  checkButton = tk.Checkbutton(frame, text="Zeal 2 as last boss(z)", variable = var)
+  checkButton = tk.Checkbutton(frame, text="Zeal 2 as last boss (z)", variable = var)
   checkButton.grid(row=row, column=2, sticky=tk.W, columnspan=2)
   CreateToolTip(checkButton, "The game ends after defeating Zeal 2 when going through the Black Omen.  Lavos is still required for the Ocean Palace route.")
   row = row + 1
@@ -394,14 +395,14 @@ def getRandomizerOptionsFrame(window):
   # Early pendant charge
   var = tk.IntVar()
   datastore.flags['p'] = var
-  pendantCheckbox= tk.Checkbutton(frame, text="Early Pendant Charge(p)", variable = var)
+  pendantCheckbox= tk.Checkbutton(frame, text="Early Pendant Charge (p)", variable = var)
   pendantCheckbox.grid(row=row, column=0, sticky=tk.W, columnspan=2)
   CreateToolTip(pendantCheckbox, "The pendant becomes charged immediately upon access to the Future, granting access to sealed doors and chests.")
   
   # Locked characters
   var = tk.IntVar()
   datastore.flags['c'] = var
-  checkButton = tk.Checkbutton(frame, text="Locked characters(c)", variable = var)
+  checkButton = tk.Checkbutton(frame, text="Locked characters (c)", variable = var)
   checkButton.grid(row=row, column=2, sticky=tk.W, columnspan=2)
   CreateToolTip(checkButton, "The Dreamstone is required to access the character in the Dactyl Nest and power must be turned on at the Factory before the Proto Dome character can be obtained.")
   row = row + 1
@@ -409,14 +410,14 @@ def getRandomizerOptionsFrame(window):
   # Unlocked Magic
   var = tk.IntVar()
   datastore.flags['m'] = var
-  checkButton = tk.Checkbutton(frame, text="Unlocked Magic(m)", variable = var)
+  checkButton = tk.Checkbutton(frame, text="Unlocked Magic (m)", variable = var)
   checkButton.grid(row=row, column=0, sticky=tk.W, columnspan=2)
   CreateToolTip(checkButton, "Magic is unlocked at the start of the game, no trip to Spekkio required.")
   
   # Tab Treasures
   var = tk.IntVar()
   datastore.flags['tb'] = var
-  checkButton = tk.Checkbutton(frame, text="Make all treasures tabs(tb)", variable = var)
+  checkButton = tk.Checkbutton(frame, text="Make all treasures tabs (tb)", variable = var)
   checkButton.grid(row=row, column=2, sticky=tk.W, columnspan=3)
   CreateToolTip(checkButton, "All treasures chest contents are replaced with power, magic, or speed tabs.")
   row = row + 1
@@ -432,7 +433,7 @@ def getRandomizerOptionsFrame(window):
       
   var = tk.IntVar()
   datastore.flags['cr'] = var
-  checkButton = tk.Checkbutton(frame, text="Chronosanity(cr)", variable = var, command=disableChronosanityIncompatibleFlags)
+  checkButton = tk.Checkbutton(frame, text="Chronosanity (cr)", variable = var, command=disableChronosanityIncompatibleFlags)
   checkButton.grid(row=row, sticky=tk.W, columnspan=2)
   CreateToolTip(checkButton, "Key items can now show up in most treasure chests in addition to their normal locations.")
   row = row + 1

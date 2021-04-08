@@ -83,6 +83,6 @@ def randomize_hardcoded_items(outfile,tab_treasures):
      f.seek(rock_posts[i][1])
      f.write(st.pack("B",rock))
      i += 1
-   f.close
+   f.close()
 if __name__ == "__main__":
    randomize_hardcoded_items("Project.sfc")

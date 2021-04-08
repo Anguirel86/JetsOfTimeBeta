@@ -116,7 +116,7 @@ def randomize_enemy_stuff(f,difficulty):
   else:
       status_effect = rand.choice([4,0x80]) #Chaos, Stop
   f.write(st.pack("B",status_effect))
-  f.close
+  f.close()
 def randomize_boss_stuff(f,difficulty):
     for id in early_boss_ids:
         rand_num = rand.randrange(0,100,1)

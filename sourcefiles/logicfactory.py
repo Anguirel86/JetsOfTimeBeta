@@ -9,6 +9,10 @@ from logictypes import *
 # object holds a list of all LocationGroups, KeyItems, and a configured
 # Game object.  These are used by the logic writer to handle key item placement.
 #
+# TODO: There is some duplication in locations between the different GameConfig
+#       objects.  Optimally the locations would be defined once and referenced
+#       by the GameConfigs that cared about them. 
+#
 
 #
 # The GameConfig class holds the locations and key items associated with a game type.
@@ -496,7 +500,7 @@ class ChronosanityGameConfig(GameConfig):
     # so that they appear earlier in the run, opening up more potential checks.
     # The ruby knife, dreamstone, clone, and trigger only appear once to reduce
     # the frequency of extremely early go mode from open checks.
-    # The hilt and blade show up 3 times each, also to reduce early go mode through
+    # The hilt and blade show up 2-3 times each, also to reduce early go mode through
     # Magus' Castle to a reasonable number.
     
     # Seed the list with 5 copies of each item

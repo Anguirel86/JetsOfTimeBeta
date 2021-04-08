@@ -92,7 +92,7 @@ def randomize_shops(outfile):
      f.write(st.pack("H",shop_pointer))
      shop_pointer += shop_items
      shop_address = write_slots(f,start,shop_items,shop_address)
-   f.close
+   f.close()
 
 #
 # Get a random price from 1-65000.  This function tends to 

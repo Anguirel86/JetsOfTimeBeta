@@ -162,11 +162,11 @@ def randomize_keys(char_locs,outfile,locked_chars):
            f.seek(pointer2[i])
            f.write(st.pack("B",written_key))
            i += 1
-           f.close
+           f.close()
     f = open("spoiler_log.txt","w+")
     rename_chars(char_locs)
     f.write(f"{str(locations)}\n{str(char_locs)}")
-    f.close
+    f.close()
     return locations
 def randomize_lost_worlds_keys(char_locs,outfile):
     loclist = []
@@ -213,11 +213,11 @@ def randomize_lost_worlds_keys(char_locs,outfile):
            f.seek(pointer2[i])
            f.write(st.pack("B",written_key))
            i += 1
-           f.close
+           f.close()
     f = open("spoiler_log.txt","w+")
     rename_chars(char_locs)
     f.write(f"{str(locations)}\n{str(char_locs)}")
-    f.close
+    f.close()
     return locations
 if __name__ == "__main__":
     char_locations = chars.randomize_char_positions("Project.sfc","Y")

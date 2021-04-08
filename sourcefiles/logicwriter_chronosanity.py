@@ -21,11 +21,11 @@ import treasurewriter as treasure
 locationGroups = []
 
 #
-# Get a list of location groups that are available for key item placement.
+# Get a list of LocationGroups that are available for key item placement.
 #
 # param: game - Game object used to determine location access
 #
-# return: List of all available locations
+# return: List of all available LocationGroups
 #
 def getAvailableLocations(game):
   # Have the game object update what characters are available based on the
