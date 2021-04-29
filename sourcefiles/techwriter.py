@@ -163,9 +163,9 @@ magicwall = {"attack_byte": 0, "effect": 0, "tech_id": 0x35, "efpointer": [2,4,0
 darkmist = {"attack_byte": 0x42, "effect": 7, "tech_id": 0x36, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x19,0,0],
 "anim": [0x32,0xF8,4,0xA,0x34,0x34,0x2F], "text": [0x2F,0xA3,0xBA,0xCB,0xC4,0xFF,0xAC,0xC2,0xCC,0xCD,0xEF],
 "descpointer": [0xDB,0x3E], "mp_cost": 10, "targeting": [8,0]}
-blackhole = {"attack_byte": 2, "effect": 0x24, "tech_id": 0x37, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,2,0,0],
-"anim": [0x37,0xF1,4,0xA,0x34,0x34,0x3C], "text": [0x2F,0xA1,0xC5,0xBA,0xBC,0xC4,0xFF,0xB6,0xC2,0xC7,0xBD],
-"descpointer": [0xF3,0x3E], "mp_cost": 15, "targeting": [8,0]}
+antilife = {"attack_byte": 2, "effect": 0x23, "tech_id": 0x37, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x2A,0,0],
+"anim": [0x10,0xE1,2,0x1B,0x34,0x06,0x35], "text": [0x2F,0xA0,0xC7,0xCD,0xC2,0xFF,0xAB,0xC2,0xBF,0xBE,0xFF],
+"descpointer": [0xF3,0x3E], "mp_cost": 15, "targeting": [7,0]}
 darkmatter = {"attack_byte": 0x42, "effect": 7, "tech_id": 0x38, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x2A,0,0],
 "anim": [0x38,0xF1,4,0xA,0x34,0x34,0x1E], "text": [0x2F,0xA3,0xBA,0xCB,0xC4,0xAC,0xBA,0xCD,0xCD,0xBE,0xCB],
 "descpointer": [2,0x3F], "mp_cost": 20, "targeting": [8,0]}
@@ -176,7 +176,7 @@ new_ids = {"cyclone": "", "slash": "", "lightning": "", "spincut": "", "lightnin
 "areabomb": "", "shock": "", "slurp": "", "slurpcut": "", "water": "", "heal": "", "leapslash": "", "water2": "",
 "cure2_2": "", "frogsquash": "", "kiss": "", "rollokick": "", "catattack": "", "rockthrow": "", "charm": "", 
 "tailspin": "", "dinotail": "", "triplekick": "", "lightning2_2": "", "ice2_2": "", "fire2_2": "", "darkbomb": "",
-"magicwall": "", "darkmist": "", "blackhole": "", "darkmatter": ""}
+"magicwall": "", "darkmist": "", "antilife": "", "darkmatter": ""}
 global control_pointer
 control_pointer = 0xC1BF6
 global effect_pointer
@@ -205,7 +205,7 @@ def randomize_tech_order(character):
     "protect", "fire2", "megabomb", "flare", "rocketpunch", "curebeam", "laserspin", "robotackle", "healbeam", 
     "uzzipunch", "areabomb", "shock", "slurp", "slurpcut", "water", "heal", "leapslash", "water2", "cure2_2", 
     "frogsquash", "kiss", "rollokick", "catattack", "rockthrow", "charm", "tailspin", "dinotail", "triplekick", 
-    "lightning2_2", "ice2_2", "fire2_2", "darkbomb", "magicwall", "darkmist", "blackhole", "darkmatter"]
+    "lightning2_2", "ice2_2", "fire2_2", "darkbomb", "magicwall", "darkmist", "antilife", "darkmatter"]
     avail_techs = character.copy()
     while i < len(character):
           picked_tech = rand.choice(avail_techs)
@@ -237,7 +237,7 @@ def randomize_tech_order_balanced(character,balanced_char):
     "protect", "fire2", "megabomb", "flare", "rocketpunch", "curebeam", "laserspin", "robotackle", "healbeam", 
     "uzzipunch", "areabomb", "shock", "slurp", "slurpcut", "water", "heal", "leapslash", "water2", "cure2_2", 
     "frogsquash", "kiss", "rollokick", "catattack", "rockthrow", "charm", "tailspin", "dinotail", "triplekick", 
-    "lightning2_2", "ice2_2", "fire2_2", "darkbomb", "magicwall", "darkmist", "blackhole", "darkmatter"]
+    "lightning2_2", "ice2_2", "fire2_2", "darkbomb", "magicwall", "darkmist", "antilife", "darkmatter"]
     avail_techs = balanced_char.copy()
     while i < len(character):
           if len(avail_techs) == 1:
@@ -1000,7 +1000,7 @@ def take_pointer(pointer):
     robo = [rocketpunch,curebeam,laserspin,robotackle,healbeam,uzzipunch,areabomb,shock]
     frog = [slurp,slurpcut,water,heal,leapslash,water2,cure2_2,frogsquash]
     ayla = [kiss,rollokick,catattack,rockthrow,charm,tailspin,dinotail,triplekick]
-    magus = [lightning2_2,ice2_2,fire2_2,darkbomb,magicwall,darkmist,blackhole,darkmatter]
+    magus = [lightning2_2,ice2_2,fire2_2,darkbomb,magicwall,darkmist,antilife,darkmatter]
     chars = [crono, marle, lucca, robo, frog, ayla, magus]
     for character in chars:
         randomize_tech_order(character)
@@ -1018,7 +1018,7 @@ def take_pointer_balanced(pointer):
     robo = [rocketpunch,curebeam,laserspin,robotackle,healbeam,uzzipunch,areabomb,shock]
     frog = [slurp,slurpcut,water,heal,leapslash,water2,cure2_2,frogsquash]
     ayla = [kiss,rollokick,catattack,rockthrow,charm,tailspin,dinotail,triplekick]
-    magus = [lightning2_2,ice2_2,fire2_2,darkbomb,magicwall,darkmist,blackhole,darkmatter]
+    magus = [lightning2_2,ice2_2,fire2_2,darkbomb,magicwall,darkmist,antilife,darkmatter]
     b_crono = [cyclone,cyclone,cyclone,cyclone,cyclone,cyclone,cyclone,cyclone,
              slash,slash,slash,slash,slash,slash,slash,
              lightning,lightning,lightning,lightning,lightning,lightning,
@@ -1073,7 +1073,7 @@ def take_pointer_balanced(pointer):
              darkbomb,darkbomb,darkbomb,
              magicwall,magicwall,magicwall,magicwall,magicwall,magicwall,magicwall,
              darkmist,darkmist,
-             blackhole,blackhole,blackhole,blackhole,blackhole,blackhole,blackhole,blackhole,
+             antilife,antilife,antilife,antilife,antilife,antilife,antilife,antilife,
              darkmatter]
     chars = [crono, marle, lucca, robo, frog, ayla, magus]
     balanced_chars = [b_crono, b_marle, b_lucca, b_robo, b_frog, b_ayla, b_magus]
