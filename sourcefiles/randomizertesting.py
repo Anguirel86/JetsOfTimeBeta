@@ -17,6 +17,7 @@ import bossrando as boss_shuffler
 import bossscaler as boss_scale
 import techwriter as tech_order
 import randomizerguitesting as gui
+import tabchange as tabwriter
 
 def tenthousands_digit(digit):
     digit = st.unpack(">B",digit)
@@ -373,6 +374,7 @@ def generate_rom():
          bigpatches.write_patch("patches/fastmagic.ips",outfile)
      if difficulty == "hard":
          bigpatches.write_patch("patches/hard.ips",outfile)
+     tabwriter.rewrite_tabs(outfile)
      print("Randomizing treasures...")
      treasures.randomize_treasures(outfile,difficulty, tab_treasures)
      hardcoded_items.randomize_hardcoded_items(outfile, tab_treasures)

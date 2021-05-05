@@ -18,6 +18,7 @@ import bossrando as boss_shuffler
 import bossscaler as boss_scale
 import techwriter as tech_order
 import randomizergui as gui
+import tabchange as tabwriter
 
 def read_names():
         p = open("names.txt","r")
@@ -352,6 +353,7 @@ def generate_rom():
          bigpatches.write_patch("patches/fastmagic.ips",outfile)
      if difficulty == "hard":
          bigpatches.write_patch("patches/hard.ips",outfile)
+     tabwriter.rewrite_tabs(outfile)#Psuedoarc's code to rewrite Power and Magic tabs and make them more impactful
      print("Randomizing treasures...")
      treasures.randomize_treasures(outfile,difficulty,tab_treasures)
      hardcoded_items.randomize_hardcoded_items(outfile,tab_treasures)
