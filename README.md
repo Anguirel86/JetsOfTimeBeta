@@ -1,6 +1,6 @@
 Jets of Time: An Open Ended Chrono Trigger Randomizer
 
-Version: 2.0.3
+Version: 3.0.0
 
 Date: July 6, 2020
 
@@ -28,10 +28,10 @@ If on commandline mode, either enter the location of the ROM or drag and drop it
 
 Designers: Anskiy, Abyssonym
 
-Developers: Anskiy, Abyssonym, Myself086, Anguirel
+Developers: Anskiy, Abyssonym, Myself086, Anguirel, FutureForce14, gameboyf9, Psuedoarc
 
-Technical Assistance: Mauron, Myself086, Lagolunatic
+Technical Assistance: Mauron, Myself086, Lagolunatic, Psuedoarc
 
-Notable Testers: Muppetsinspace, MisterLichTV, TheBigSalarius, proccy, boozewizard
+Notable Testers: Muppetsinspace, MisterLichTV, TheBigSalarius, proccy, boozewizard, Korenth, Taco Hero, silverneo, many others(Sorry if I forgot your name!)
 
 Guides: MisterLichTV, TrintonGL
