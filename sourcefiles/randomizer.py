@@ -3,6 +3,7 @@ import struct as st
 from os import stat
 from time import time
 import sys
+import pathlib
 import treasurewriter as treasures
 import specialwriter as hardcoded_items
 import shopwriter as shops
@@ -17,53 +18,19 @@ import bossrando as boss_shuffler
 import bossscaler as boss_scale
 import techwriter as tech_order
 import randomizergui as gui
+import tabchange as tabwriter
 
-def tenthousands_digit(digit):
-    digit = st.unpack(">B",digit)
-    digit = int(digit[0]) * 0x10000
-    return digit       
-def make_number(digit,digit2):
-       digit2 = st.unpack(">H",digit2)
-       digit2 = int(digit2[0])
-       number = digit + digit2
-#       print "{:X}".format(number)
-       return number
-def get_length(length):
-       length = st.unpack(">H",length)
-       length = int(length[0])
-       return length
-def write_data(length,pointer,position):
-        bRepeatable = False
-        if length == 0:
-            length = p.read(2)
-            length = get_length(length)
-            data = get_data()            
-            position += 3
-            bRepeatable = True
-        while length > 0:
-          if not bRepeatable:
-            data = get_data()
-            position += 1
-          f.seek(pointer)
-          f.write(st.pack("B",data))
-          pointer += 1
-          length -= 1
-        return position
-def get_data():
-        data = p.read(1)
-        data = st.unpack("B",data)
-        data = int(data[0])
-        return data
 def read_names():
         p = open("names.txt","r")
         names = p.readline()
         names = names.split(",")
-        p.close
+        p.close()
         return names
 
 # Script variables
 flags = ""
 sourcefile = ""
+outputfolder = ""
 difficulty = ""
 glitch_fixes = ""
 fast_move = ""
@@ -81,6 +48,7 @@ quiet_mode = ""
 chronosanity = ""
 tab_treasures = ""
 boss_rando = ""
+shop_prices = ""
    
 #
 # Handle the command line interface for the randomizer.
@@ -88,6 +56,7 @@ boss_rando = ""
 def command_line():
      global flags
      global sourcefile
+     global outputfolder
      global difficulty
      global glitch_fixes
      global fast_move
@@ -105,6 +74,7 @@ def command_line():
      global chronosanity
      global tab_treasures
      global boss_rando
+     global shop_prices
      
      flags = ""
      sourcefile = input("Please enter ROM name or drag it onto the screen.")
@@ -113,6 +83,7 @@ def command_line():
          if sourcefile.find(".smc") == - 1:
              input("Invalid File Name. Try placing the ROM in the same folder as the randomizer. Also, try writing the extension(.sfc/smc).")
              exit()
+     outputfolder = os.path.dirname(sourcefile)
      seed = input("Enter seed(or leave blank if you want to randomly generate one).")
      if seed is None or seed == "":
         names = read_names()
@@ -191,6 +162,19 @@ def command_line():
      tab_treasures = tab_treasures.upper()
      if tab_treasures == "Y":
         flags = flags + "tb"
+     shop_prices = input("Do you want shop prices to be Normal(n), Free(f), Mostly Random(m), or Fully Random(r)?")
+     shop_prices = shop_prices.upper()
+     if shop_prices == "F":
+        shop_prices = "Free"
+        flags = flags + "spf"
+     elif shop_prices == "M":
+        shop_prices = "Mostly Random"
+        flags = flags + "spm"
+     elif shop_prices == "R":
+        shop_prices = "Fully_Random"
+        flags = flags + "spr"
+     else:
+        shop_prices = "Normal"
     
 
 #
@@ -210,6 +194,7 @@ def get_flag_value(flag_var):
 def handle_gui(datastore):
   global flags
   global sourcefile
+  global outputfolder
   global difficulty
   global glitch_fixes
   global fast_move
@@ -226,12 +211,16 @@ def handle_gui(datastore):
   global chronosanity
   global tab_treasures
   global boss_rando
+  global shop_prices
   
   # Get the user's chosen difficulty
   difficulty = datastore.difficulty.get()
 
   # Get the user's chosen tech randomization
   tech_list = datastore.techRando.get()
+  
+  # Get the user's chosen shop price settings
+  shop_prices = datastore.shopPrices.get()
   
   # build the flag string from the gui datastore vars
   flags = difficulty[0]
@@ -242,6 +231,13 @@ def handle_gui(datastore):
       flags = flags + "te"
   elif tech_list == "Balanced Random":
       flags = flags + "tex"
+      
+  if shop_prices == "Free":
+    flags = flags + "spf"
+  elif shop_prices == "Mostly Random":
+    flags = flags + "spm"
+  elif shop_prices == "Fully Random":
+    flags = flags + "spr"
   
   # Set the flag variables based on what the user chose
   glitch_fixes = get_flag_value(datastore.flags['g'])
@@ -261,6 +257,9 @@ def handle_gui(datastore):
   # source ROM
   sourcefile = datastore.inputFile.get()
   
+  # output folder
+  outputfolder = datastore.outputFolder.get()
+  
   # seed
   seed = datastore.seed.get()
   if seed is None or seed == "":
@@ -272,13 +271,13 @@ def handle_gui(datastore):
   # GUI values have been converted, generate the ROM.
   generate_rom()
    
-   
 #
 # Generate the randomized ROM.
 #    
 def generate_rom():
      global flags
      global sourcefile
+     global outputfolder
      global difficulty
      global glitch_fixes
      global fast_move
@@ -295,13 +294,27 @@ def generate_rom():
      global quiet_mode
      global chronosanity
      global tab_treasures
+     global shop_prices
      
-     outfile = sourcefile.split(".")
+     # isolate the ROM file name
+     inputPath = pathlib.Path(sourcefile)
+     outfile = inputPath.name
+     
+     # Create the output file name
+     outfile = outfile.split(".")
      outfile = str(outfile[0])
      if flags == "":
        outfile = "%s.%s.sfc"%(outfile,seed)
      else:
        outfile = "%s.%s.%s.sfc"%(outfile,flags,seed)
+       
+     # Append the output file name to the selected directory
+     # If there is no selected directory, use the input path
+     if outputfolder == None or outputfolder == "":
+       outfile = str(inputPath.parent.joinpath(outfile))
+     else:
+       outfile = str(pathlib.Path(outputfolder).joinpath(outfile))
+       
      size = stat(sourcefile).st_size
      if size % 0x400 == 0:
         copyfile(sourcefile, outfile)
@@ -338,6 +351,9 @@ def generate_rom():
              patches.patch_file("patches/fast_charge_pendant.txt",outfile)
      if unlocked_magic == "Y":
          bigpatches.write_patch("patches/fastmagic.ips",outfile)
+     if difficulty == "hard":
+         bigpatches.write_patch("patches/hard.ips",outfile)
+     tabwriter.rewrite_tabs(outfile)#Psuedoarc's code to rewrite Power and Magic tabs and make them more impactful
      print("Randomizing treasures...")
      treasures.randomize_treasures(outfile,difficulty,tab_treasures)
      hardcoded_items.randomize_hardcoded_items(outfile,tab_treasures)
@@ -345,25 +361,23 @@ def generate_rom():
      enemystuff.randomize_enemy_stuff(outfile,difficulty)
      print("Randomizing shops...")
      shops.randomize_shops(outfile)
+     shops.modify_shop_prices(outfile, shop_prices)
      print("Randomizing character locations...")
      char_locs = char_slots.randomize_char_positions(outfile,locked_chars,lost_worlds)
      print("Now placing key items...")
-     if lost_worlds == "Y":
-         keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
+     if chronosanity == "Y":
+       chronosanity_logic.writeKeyItems(
+           outfile, char_locs, (locked_chars == "Y"), (quick_pendant == "Y"), lost_worlds == "Y")
+     elif lost_worlds == "Y":
+       keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
      else:
-         if chronosanity == "Y":
-           chronosanity_logic.writeKeyItems(
-               outfile, char_locs, (locked_chars == "Y"), (quick_pendant == "Y"))
-         else:
-           keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
-     if difficulty == "hard":
-         bigpatches.write_patch("patches/hard.ips",outfile)
+       keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
      if boss_scaler == "Y" and chronosanity != "Y":
          print("Rescaling bosses based on key items..")
          boss_scale.scale_bosses(char_locs,keyitemlist,locked_chars,outfile)
      #print("Boss rando: " + boss_rando)
      if boss_rando == "Y":
-         boss_shuffler.randomize_bosses(outfile)
+         boss_shuffler.randomize_bosses(outfile,difficulty)
      if tech_list == "Fully Random":
          tech_order.take_pointer(outfile)
      elif tech_list == "Balanced Random":
@@ -385,8 +399,7 @@ def generate_rom():
          bigpatches.write_patch("patches/bangorfix.ips",outfile)
        f.close()
      print("Randomization completed successfully.")
-     
-     
+
      
 if __name__ == "__main__":
   if len(sys.argv) > 1 and sys.argv[1] == "-c":

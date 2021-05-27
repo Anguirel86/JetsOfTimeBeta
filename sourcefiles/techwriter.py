@@ -19,7 +19,7 @@ lightning2 = {"attack_byte": 0x82, "effect": 7, "tech_id": 5, "efpointer": [3,0,
 life = {"attack_byte": 0, "effect": 0, "tech_id": 6, "efpointer": [1,0xD0,0x80,0,0,0,0,0xA0,0,0,0,0], 	
 "anim": [6,0xE1,2,0x1B,6,6,0x1D], "text": [0x2F,0xAB,0xC2,0xBF,0xBE,0xEF,0xEF,0xEF,0xEF,0xEF,0xEF], 
 "descpointer": [0x52,0x3B], "mp_cost": 10, "targeting": [3,0]}
-confuse = {"attack_byte": 4, "effect": 0x14, "tech_id": 7, "efpointer": [8,4,0,0x3A,0x3B,1,0x3E,0x80,0x80,0x1D,4,0],
+confuse = {"attack_byte": 4, "effect": 0x14, "tech_id": 7, "efpointer": [8,4,0,0x3A,0x3B,1,0x3E,0x80,0x80,0x23,4,0],
 "anim": [7,0x20,0x24,0x2D,7,7,0xFF], "text": [0xA2,0xC8,0xC7,0xBF,0xCE,0xCC,0xBE,0xEF,0xEF,0xEF,0xEF], 
 "descpointer": [0x64,0x3B], "mp_cost": 15, "targeting": [7,0]}
 luminaire = {"attack_byte": 0x82, "effect": 7, "tech_id": 8, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x32,0,0],
@@ -82,21 +82,21 @@ curebeam = {"attack_byte": 0, "effect": 0, "tech_id": 0x1A, "efpointer": [0,0xC,
 laserspin = {"attack_byte": 0x42, "effect": 7, "tech_id": 0x1B, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0xC,0,0],
 "anim": [0x1C,0x61,0xE0,0x26,0x1B,0x1B,9], "text": [0xAB,0xBA,0xCC,0xBE,0xCB,0xFF,0xB2,0xC9,0xC2,0xC7,0xEF],
 "descpointer": [0xDA,0x3C], "mp_cost": 6, "targeting": [8,0]}
-robotackle = {"attack_byte": 4, "effect": 0, "tech_id": 0x1C, "efpointer": [3,0,0,0x3A,0x3B,1,0x3E,0x80,0x80,0x10,4,0x80],
+robotackle = {"attack_byte": 4, "effect": 0, "tech_id": 0x1C, "efpointer": [3,0,0,0x3A,0x3B,5,0x3E,0x80,0x80,0x1E,4,0x80],
 "anim": [0x1B,0x61,0xE0,0x26,0x1B,0x1B,9], "text": [0xB1,0xC8,0xBB,0xC8,0xFF,0xB3,0xBA,0xBC,0xC4,0xC5,0xBE],
 "descpointer": [0xEC,0x3C], "mp_cost": 6, "targeting": [7,0]}
 healbeam = {"attack_byte": 0, "effect": 0, "tech_id": 0x1D, "efpointer": [0,0xC,0x80,0,0,0,0,0,0,0,0,0],
 "anim": [0x1D,0xE1,2,0x13,0xB,0xB,0x59], "text": [0xA7,0xBE,0xBA,0xC5,0xFF,0xA1,0xBE,0xBA,0xC6,0xEF,0xEF],
 "descpointer": [0xF7,0x3C], "mp_cost": 4, "targeting": [0x81,0]}
-uzzipunch = {"attack_byte": 4, "effect": 0, "tech_id": 0x1E, "efpointer": [3,0,0,0x3A,0x3B,1,0x3E,0x80,0x80,0x19,4,0x80],
+uzzipunch = {"attack_byte": 4, "effect": 0, "tech_id": 0x1E, "efpointer": [3,0,0,0x3A,0x3B,1,0x3E,0x80,0x80,0x1F,4,0x80],
 "anim": [0x1E,0xE6,0xC3,0x24,0x19,0x19,0xFF], "text": [0xB4,0xD3,0xD3,0xC2,0xFF,0xAF,0xCE,0xC7,0xBC,0xC1,0xEF],
 "descpointer": [0xB,0x3D], "mp_cost": 15, "targeting": [7,0]}
 areabomb = {"attack_byte": 0x12, "effect": 7, "tech_id": 0x1F, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x1E,0,0],
 "anim": [0x1F,0xF1,0xF5,0xA,0x1F,0x1F,0x50], "text": [0xA0,0xCB,0xBE,0xBA,0xFF,0xA1,0xC8,0xC6,0xBB,0xEF,0xEF],
-"descpointer": [0x20,0x3D], "mp_cost": 14, "targeting": [0x11,2]}
+"descpointer": [0x20,0x3D], "mp_cost": 10, "targeting": [0x11,2]}
 shock = {"attack_byte": 0x82, "effect": 7, "tech_id": 0x20, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x28,0,0],
 "anim": [0x20,0x61,0,1,0,0,0x22], "text": [0xB2,0xC1,0xC8,0xBC,0xC4,0xEF,0xEF,0xEF,0xEF,0xEF,0xEF],
-"descpointer": [0x36,0x3D], "mp_cost": 17, "targeting": [8,0]}
+"descpointer": [0x36,0x3D], "mp_cost": 12, "targeting": [8,0]}
 slurp = {"attack_byte": 0, "effect": 0, "tech_id": 0x21, "efpointer": [0,8,0x80,0,0,0,0,0,0,0,0,0],
 "anim": [0x21,0xE1,0,0x1D,9,9,0xFF], "text": [0xB2,0xC5,0xCE,0xCB,0xC9,0xEF,0xEF,0xEF,0xEF,0xEF,0xEF],
 "descpointer": [0x51,0x3D], "mp_cost": 1, "targeting": [0x80,0]}
@@ -163,9 +163,9 @@ magicwall = {"attack_byte": 0, "effect": 0, "tech_id": 0x35, "efpointer": [2,4,0
 darkmist = {"attack_byte": 0x42, "effect": 7, "tech_id": 0x36, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x19,0,0],
 "anim": [0x32,0xF8,4,0xA,0x34,0x34,0x2F], "text": [0x2F,0xA3,0xBA,0xCB,0xC4,0xFF,0xAC,0xC2,0xCC,0xCD,0xEF],
 "descpointer": [0xDB,0x3E], "mp_cost": 10, "targeting": [8,0]}
-blackhole = {"attack_byte": 2, "effect": 0x24, "tech_id": 0x37, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,2,0,0],
-"anim": [0x37,0xF1,4,0xA,0x34,0x34,0x3C], "text": [0x2F,0xA1,0xC5,0xBA,0xBC,0xC4,0xFF,0xB6,0xC2,0xC7,0xBD],
-"descpointer": [0xF3,0x3E], "mp_cost": 15, "targeting": [8,0]}
+antilife = {"attack_byte": 2, "effect": 0x23, "tech_id": 0x37, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x3F,0,0],
+"anim": [0x10,0xE1,2,0x1B,0x34,0x06,0x35], "text": [0x2F,0xA0,0xC7,0xCD,0xC2,0xFF,0xAB,0xC2,0xBF,0xBE,0xFF],
+"descpointer": [0xF3,0x3E], "mp_cost": 15, "targeting": [7,0]}
 darkmatter = {"attack_byte": 0x42, "effect": 7, "tech_id": 0x38, "efpointer": [3,0,0,0,0,3,0x3C,0x70,0,0x2A,0,0],
 "anim": [0x38,0xF1,4,0xA,0x34,0x34,0x1E], "text": [0x2F,0xA3,0xBA,0xCB,0xC4,0xAC,0xBA,0xCD,0xCD,0xBE,0xCB],
 "descpointer": [2,0x3F], "mp_cost": 20, "targeting": [8,0]}
@@ -176,7 +176,7 @@ new_ids = {"cyclone": "", "slash": "", "lightning": "", "spincut": "", "lightnin
 "areabomb": "", "shock": "", "slurp": "", "slurpcut": "", "water": "", "heal": "", "leapslash": "", "water2": "",
 "cure2_2": "", "frogsquash": "", "kiss": "", "rollokick": "", "catattack": "", "rockthrow": "", "charm": "", 
 "tailspin": "", "dinotail": "", "triplekick": "", "lightning2_2": "", "ice2_2": "", "fire2_2": "", "darkbomb": "",
-"magicwall": "", "darkmist": "", "blackhole": "", "darkmatter": ""}
+"magicwall": "", "darkmist": "", "antilife": "", "darkmatter": ""}
 global control_pointer
 control_pointer = 0xC1BF6
 global effect_pointer
@@ -205,7 +205,7 @@ def randomize_tech_order(character):
     "protect", "fire2", "megabomb", "flare", "rocketpunch", "curebeam", "laserspin", "robotackle", "healbeam", 
     "uzzipunch", "areabomb", "shock", "slurp", "slurpcut", "water", "heal", "leapslash", "water2", "cure2_2", 
     "frogsquash", "kiss", "rollokick", "catattack", "rockthrow", "charm", "tailspin", "dinotail", "triplekick", 
-    "lightning2_2", "ice2_2", "fire2_2", "darkbomb", "magicwall", "darkmist", "blackhole", "darkmatter"]
+    "lightning2_2", "ice2_2", "fire2_2", "darkbomb", "magicwall", "darkmist", "antilife", "darkmatter"]
     avail_techs = character.copy()
     while i < len(character):
           picked_tech = rand.choice(avail_techs)
@@ -237,7 +237,7 @@ def randomize_tech_order_balanced(character,balanced_char):
     "protect", "fire2", "megabomb", "flare", "rocketpunch", "curebeam", "laserspin", "robotackle", "healbeam", 
     "uzzipunch", "areabomb", "shock", "slurp", "slurpcut", "water", "heal", "leapslash", "water2", "cure2_2", 
     "frogsquash", "kiss", "rollokick", "catattack", "rockthrow", "charm", "tailspin", "dinotail", "triplekick", 
-    "lightning2_2", "ice2_2", "fire2_2", "darkbomb", "magicwall", "darkmist", "blackhole", "darkmatter"]
+    "lightning2_2", "ice2_2", "fire2_2", "darkbomb", "magicwall", "darkmist", "antilife", "darkmatter"]
     avail_techs = balanced_char.copy()
     while i < len(character):
           if len(avail_techs) == 1:
@@ -369,12 +369,12 @@ def rewrite_combo_techs():
     combo_tech_requirements += 3
     #Super Volt
     file_pointer.seek(combo_tech_address)
-    file_pointer.write(st.pack("B",new_ids["lightning2"]))
+    file_pointer.write(st.pack("B",new_ids["luminaire"]))
     file_pointer.seek(combo_tech_address+1)
     file_pointer.write(st.pack("B",new_ids["shock"]))
     combo_tech_address += 11
     file_pointer.seek(combo_tech_requirements)
-    file_pointer.write(st.pack("B",new_ids["lightning2"]))
+    file_pointer.write(st.pack("B",new_ids["luminaire"]))
     file_pointer.seek(combo_tech_requirements+1)
     file_pointer.write(st.pack("B",new_ids["shock"] - 24))
     combo_tech_requirements += 3
@@ -1000,7 +1000,7 @@ def take_pointer(pointer):
     robo = [rocketpunch,curebeam,laserspin,robotackle,healbeam,uzzipunch,areabomb,shock]
     frog = [slurp,slurpcut,water,heal,leapslash,water2,cure2_2,frogsquash]
     ayla = [kiss,rollokick,catattack,rockthrow,charm,tailspin,dinotail,triplekick]
-    magus = [lightning2_2,ice2_2,fire2_2,darkbomb,magicwall,darkmist,blackhole,darkmatter]
+    magus = [lightning2_2,ice2_2,fire2_2,darkbomb,magicwall,darkmist,antilife,darkmatter]
     chars = [crono, marle, lucca, robo, frog, ayla, magus]
     for character in chars:
         randomize_tech_order(character)
@@ -1018,7 +1018,7 @@ def take_pointer_balanced(pointer):
     robo = [rocketpunch,curebeam,laserspin,robotackle,healbeam,uzzipunch,areabomb,shock]
     frog = [slurp,slurpcut,water,heal,leapslash,water2,cure2_2,frogsquash]
     ayla = [kiss,rollokick,catattack,rockthrow,charm,tailspin,dinotail,triplekick]
-    magus = [lightning2_2,ice2_2,fire2_2,darkbomb,magicwall,darkmist,blackhole,darkmatter]
+    magus = [lightning2_2,ice2_2,fire2_2,darkbomb,magicwall,darkmist,antilife,darkmatter]
     b_crono = [cyclone,cyclone,cyclone,cyclone,cyclone,cyclone,cyclone,cyclone,
              slash,slash,slash,slash,slash,slash,slash,
              lightning,lightning,lightning,lightning,lightning,lightning,
@@ -1073,7 +1073,7 @@ def take_pointer_balanced(pointer):
              darkbomb,darkbomb,darkbomb,
              magicwall,magicwall,magicwall,magicwall,magicwall,magicwall,magicwall,
              darkmist,darkmist,
-             blackhole,blackhole,blackhole,blackhole,blackhole,blackhole,blackhole,blackhole,
+             antilife,antilife,antilife,antilife,antilife,antilife,antilife,antilife,
              darkmatter]
     chars = [crono, marle, lucca, robo, frog, ayla, magus]
     balanced_chars = [b_crono, b_marle, b_lucca, b_robo, b_frog, b_ayla, b_magus]

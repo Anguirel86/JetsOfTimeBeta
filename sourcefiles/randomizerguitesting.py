@@ -20,6 +20,7 @@ class DataStore:
     self.inputFile = None
     self.outputFile = None
     self.techRando = None
+    self.shopPrices = None
     self.characters = ['Crono', 'Marle', 'Lucca', 'Frog', 'Robo', 'Ayla', 'Magus']
     self.charLocVars = {}
 
@@ -69,13 +70,17 @@ def flagClear():
     datastore.flags['s'].set(0)
     datastore.flags['d'].set(0)
     datastore.flags['l'].set(0)
+    datastore.flags['ro'].set(0)
     datastore.flags['b'].set(0)
     datastore.flags['z'].set(0)
     datastore.flags['p'].set(0)
     datastore.flags['c'].set(0)
     datastore.flags['m'].set(0)
+    datastore.flags['q'].set(0)
+    datastore.flags['tb'].set(0)
     datastore.flags['cr'].set(0)
     datastore.techRando.set("Normal")
+    datastore.shopPrices.set("Normal")
     # Make sure all checkboxes are enabled
     for widget in optionsFrame.winfo_children():
       if type(widget) == tk.Checkbutton:
@@ -195,6 +200,13 @@ def getGameFlagsFrame(window):
   lostWorldsCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
   
+  # Boss randomization
+  var = tk.IntVar()
+  datastore.flags['ro'] = var
+  bossRandoCheckbox = tk.Checkbutton(frame, text="Randomize bosses(ro)", variable = var)
+  bossRandoCheckbox.grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
+  
   # Boss scaling
   var = tk.IntVar()
   datastore.flags['b'] = var
@@ -232,23 +244,37 @@ def getGameFlagsFrame(window):
   datastore.flags['q'] = var
   tk.Checkbutton(frame, text="Quiet Mode - No Music (q)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
   row = row + 1
+  
+  # Tab Treasures
+  var = tk.IntVar()
+  datastore.flags['tb'] = var
+  tk.Checkbutton(frame, text="Make all treasures tabs(tb)", variable = var).grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
 
   # Chronosanity
   def disableChronosanityIncompatibleFlags():
     if datastore.flags['cr'].get() == 1:
       # Boss scaling doesn't work with full rando.
       datastore.flags['b'].set(0)
-      datastore.flags['l'].set(0)
       bossScalingCheckbox.config(state=tk.DISABLED)
-      lostWorldsCheckbox.config(state=tk.DISABLED)
-      pendantCheckbox.config(state=tk.NORMAL)
     else:
       bossScalingCheckbox.config(state=tk.NORMAL)
-      lostWorldsCheckbox.config(state=tk.NORMAL)
       
   var = tk.IntVar()
   datastore.flags['cr'] = var
   tk.Checkbutton(frame, text="Chronosanity(cr)", variable = var, command=disableChronosanityIncompatibleFlags).grid(row=row, sticky=tk.W, columnspan=3)
+  row = row + 1
+  
+  # Dropdown for shop price settings
+  shopPriceValues = ["Normal", "Free", "Mostly Random", "Fully Random"]
+  label = tk.Label(frame, text="Shop Prices:")
+  var = tk.StringVar()
+  var.set('Normal')
+  datastore.shopPrices = var
+  dropdown = tk.OptionMenu(frame, var, *shopPriceValues)
+  dropdown.config(width = 20)
+  label.grid(row = row, column = 0, sticky = tk.W)
+  dropdown.grid(row = row, column = 1, sticky = tk.W)
   row = row + 1
   
   # Dropdown for the tech rando

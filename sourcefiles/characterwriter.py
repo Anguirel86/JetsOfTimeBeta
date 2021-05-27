@@ -1,6 +1,6 @@
 import random as rand
 import struct as st
-import patcher as patch
+import ipswriter as patch
 """stats pattern:id(not used for stat setups),hp,mp,power,stamina,magic,hit,evade,magic defense,level,
 current XP first byte,current XP last byte,XP to next level,tech points to next tech,number of techs,
 current techs bitfield"""
@@ -108,7 +108,7 @@ def write_chars(file_pointer,char_dict,locked_chars,lost_worlds,outfile):
           chars3[4] = 0x372AC3
           chars4[4] = 0x372ADD
           charloads[4] = 0x372ADE
-          patch.patch_file("patches/locked_chars.txt",outfile)		  
+          patch.write_patch("patches/locked_chars.ips",outfile)		  
       i = 0
       while i < 7:
             char = char_dict[char_keys[i]][0]
@@ -140,7 +140,7 @@ def randomize_char_positions(outfile,locked_chars,lost_worlds):
         set_stats(f,chosen_char,location,lost_worlds)
         characters.remove(chosen_char)
     write_chars(f,character_locations,locked_chars,lost_worlds,outfile)
-    f.close
+    f.close()
     return character_locations
 
 if __name__ == "__main__":

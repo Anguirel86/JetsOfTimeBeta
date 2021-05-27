@@ -13,9 +13,11 @@ import logicwriter_chronosanity as chronosanity_logic
 import ipswriter as bigpatches
 import patcher as patches
 import enemywriter as enemystuff
+import bossrando as boss_shuffler
 import bossscaler as boss_scale
 import techwriter as tech_order
 import randomizerguitesting as gui
+import tabchange as tabwriter
 
 def tenthousands_digit(digit):
     digit = st.unpack(">B",digit)
@@ -57,7 +59,7 @@ def read_names():
         p = open("names.txt","r")
         names = p.readline()
         names = names.split(",")
-        p.close
+        p.close()
         return names
 
 # Script variables
@@ -80,6 +82,9 @@ characters = ['Crono', 'Marle', 'Lucca', 'Frog', 'Robo', 'Ayla', 'Magus']
 char_locs = []
 quiet_mode = ""
 chronosanity = ""
+tab_treasures = ""
+boss_rando = ""
+shop_prices = ""
    
 #
 # Handle the command line interface for the randomizer.
@@ -100,7 +105,11 @@ def command_line():
      global seed
      global tech_list_balanced
      global unlocked_magic
-     global full_rando
+     global chronosanity
+     global tab_treasures
+     global boss_rando
+     global shop_prices
+     
      flags = ""
      sourcefile = input("Please enter ROM name or drag it onto the screen.")
      sourcefile = sourcefile.strip("\"")
@@ -141,6 +150,10 @@ def command_line():
      boss_scaler = boss_scaler.upper()
      if boss_scaler == "Y":
         flags = flags + "b"
+     boss_rando = input("Do you want randomized bosses(ro)? Y/N ")
+     boss_rando = boss_rando.upper()
+     if boss_rando == "Y":
+        flags = flags + "ro"     
      zeal_end = input("Would you like Zeal 2 to be a final boss? Note that defeating Lavos still ends the game(z). Y/N ")
      zeal_end = zeal_end.upper()
      if zeal_end == "Y":
@@ -178,6 +191,23 @@ def command_line():
      chronosanity = chronosanity.upper()
      if chronosanity == "Y":
          flags = flags + "cr"
+     tab_treasures = input("Do you want all treasures to be tabs(tb)? Y/N ")
+     tab_treasures = tab_treasures.upper()
+     if tab_treasures == "Y":
+        flags = flags + "tb"
+     shop_prices = input("Do you want shop prices to be Normal(n), Free(f), Mostly Random(m), or Fully Random(r)?")
+     shop_prices = shop_prices.upper()
+     if shop_prices == "F":
+        shop_prices = "Free"
+        flags = flags + "spf"
+     elif shop_prices == "M":
+        shop_prices = "Mostly Random"
+        flags = flags + "spm"
+     elif shop_prices == "R":
+        shop_prices = "Fully_Random"
+        flags = flags + "spr"
+     else:
+        shop_prices = "Normal"
 
 #
 # Given a tk IntVar, convert it to a Y/N value for use by the randomizer.
@@ -212,6 +242,9 @@ def handle_gui(datastore):
   global unlocked_magic
   global quiet_mode
   global chronosanity
+  global tab_treasures
+  global boss_rando
+  global shop_prices
 
   # Hopefully get the chosen character locations
   x = 0
@@ -227,6 +260,9 @@ def handle_gui(datastore):
 
   # Get the user's chosen tech randomization
   tech_list = datastore.techRando.get()
+  
+  # Get the user's chosen shop price settings
+  shop_prices = datastore.shopPrices.get()
   
   # build the flag string from the gui datastore vars
   flags = difficulty[0]
@@ -244,12 +280,14 @@ def handle_gui(datastore):
   sense_dpad = get_flag_value(datastore.flags['d'])
   lost_worlds = get_flag_value(datastore.flags['l'])
   boss_scaler = get_flag_value(datastore.flags['b'])
+  boss_rando = get_flag_value(datastore.flags['ro'])
   zeal_end = get_flag_value(datastore.flags['z'])
   quick_pendant = get_flag_value(datastore.flags['p'])
   locked_chars = get_flag_value(datastore.flags['c'])
   unlocked_magic = get_flag_value(datastore.flags['m'])
   quiet_mode = get_flag_value(datastore.flags['q'])
   chronosanity = get_flag_value(datastore.flags['cr'])
+  tab_treasures = get_flag_value(datastore.flags['tb'])
   
   # source ROM
   sourcefile = datastore.inputFile.get()
@@ -277,6 +315,7 @@ def generate_rom():
      global fast_move
      global sense_dpad
      global lost_worlds
+     global boss_rando
      global boss_scaler
      global zeal_end
      global quick_pendant
@@ -288,6 +327,9 @@ def generate_rom():
      global unlocked_magic
      global quiet_mode
      global chronosanity
+     global tab_treasures
+     global shop_prices
+     
      outfile = sourcefile.split(".")
      outfile = str(outfile[0])
      if flags == "":
@@ -330,29 +372,32 @@ def generate_rom():
              patches.patch_file("patches/fast_charge_pendant.txt",outfile)
      if unlocked_magic == "Y":
          bigpatches.write_patch("patches/fastmagic.ips",outfile)
+     if difficulty == "hard":
+         bigpatches.write_patch("patches/hard.ips",outfile)
+     tabwriter.rewrite_tabs(outfile)
      print("Randomizing treasures...")
-     treasures.randomize_treasures(outfile,difficulty)
-     hardcoded_items.randomize_hardcoded_items(outfile)
+     treasures.randomize_treasures(outfile,difficulty, tab_treasures)
+     hardcoded_items.randomize_hardcoded_items(outfile, tab_treasures)
      print("Randomizing enemy loot...")
      enemystuff.randomize_enemy_stuff(outfile,difficulty)
      print("Randomizing shops...")
      shops.randomize_shops(outfile)
+     shops.modify_shop_prices(outfile, shop_prices)
      print("Randomizing character locations...")
      char_locs = char_slots.randomize_char_positions(outfile,locked_chars,lost_worlds,characters,char_locs)
      print("Now placing key items...")
-     if lost_worlds == "Y":
-         keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
+     if chronosanity == "Y":
+       chronosanity_logic.writeKeyItems(
+           outfile, char_locs, (locked_chars == "Y"), (quick_pendant == "Y"), lost_worlds == "Y")
+     elif lost_worlds == "Y":
+       keyitemlist = keyitems.randomize_lost_worlds_keys(char_locs,outfile)
      else:
-         if chronosanity == "Y":
-           chronosanity_logic.writeKeyItems(
-               outfile, char_locs, (locked_chars == "Y"), (quick_pendant == "Y"))
-         else:
-           keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
-     if difficulty == "hard":
-         bigpatches.write_patch("patches/hard.ips",outfile)
-     if boss_scaler == "Y" and full_rando != "Y":
+       keyitemlist = keyitems.randomize_keys(char_locs,outfile,locked_chars)
+     if boss_scaler == "Y" and chronosanity != "Y":
          print("Rescaling bosses based on key items..")
          boss_scale.scale_bosses(char_locs,keyitemlist,locked_chars,outfile)
+     if boss_rando == "Y":
+         boss_shuffler.randomize_bosses(outfile,difficulty)
      if tech_list == "Fully Random":
          tech_order.take_pointer(outfile)
      elif tech_list == "Balanced Random":
