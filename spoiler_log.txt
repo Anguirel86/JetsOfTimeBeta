@@ -1,2 +1,0 @@
-{'arris': 'knife', 'geno': 'clone', 'sun': 'stone', 'reptite': 'pendant', 'woe': 'trigger'}
-{'start': 'Marle', 'start2': 'Robo', 'cathedral': 'Magus', 'castle': 'Ayla', 'proto': 'Lucca', 'burrow': 'Frog', 'dactyl': 'Chrono'}
