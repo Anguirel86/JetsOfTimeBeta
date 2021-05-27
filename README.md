@@ -8,6 +8,8 @@ URL: https://github.com/Anskiy/jetsoftime/
 
 https://sites.google.com/view/ctrandoinfo/home
 
+Online generator: http://anguirel.ddns.net/jot/
+
 Contact: https://discord.gg/cKYjHwj
          
 Email:   cecilraster475@gmail.com
@@ -24,9 +26,11 @@ Windows users can directly run the provided .exe, Mac and Linux users should run
 
 If on commandline mode, either enter the location of the ROM or drag and drop it into the window. Follow the onscreen instructions afterwards.
 
+Lastly, if you're having trouble running the executable, you can try using the online seed generator.
+
 --CREDITS--
 
-Designers: Anskiy, Abyssonym
+Designers: Anskiy, Abyssonym, Pseudoarc, Anguirel
 
 Developers: Anskiy, Abyssonym, Myself086, Anguirel, FutureForce14, gameboyf9, Psuedoarc
 
